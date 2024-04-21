@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Response;
 use Illuminate\Http\Request;
 use App\Events\TimeslotsUpdated;
 use App\Services\TimeslotsService;
-
-use App\Models\Day;
 use App\Models\Timeslot;
 
 class TimeslotsController extends Controller
@@ -40,7 +37,7 @@ class TimeslotsController extends Controller
     {
         $timeslots = $this->service->all([
             'keyword' => $request->has('keyword') ? $request->keyword : null,
-            'order_by' => 'rank',
+            'order_by' => 'id',
             'paginate' => 'true',
             'per_page' => 20
         ]);
@@ -71,19 +68,19 @@ class TimeslotsController extends Controller
 
         $this->validate($request, $rules, $messages);
 
-        $exists = Timeslot::where('time', Timeslot::createTimePeriod($request->from, $request->to))->first();
+        $exists = Timeslot::where('time', Timeslot::createTimeTimeslot($request->from, $request->to))->first();
 
         if ($exists) {
             return response()->json(['errors' => ['This timeslot already exists']], 422);
         }
 
         $data = $request->all();
-        $data['time'] = Timeslot::createTimePeriod($data['from'], $data['to']);
+        $data['time'] = Timeslot::createTimeTimeslot($data['from'], $data['to']);
 
         $timeslots = Timeslot::all();
 
         foreach ($timeslots as $timeslot) {
-            if ($timeslot->containsPeriod($data['time'])) {
+            if ($timeslot->containsTimeslot($data['time'])) {
                 $errors = [$data['time'] . ' falls within another timeslot (' . $timeslot->time
                     . ').Please adjust timeslots'];
                 return response()->json(['errors' => $errors], 422);
@@ -94,9 +91,10 @@ class TimeslotsController extends Controller
 
         if ($timeslot) {
             event(new TimeslotsUpdated());
-            return response()->json(['message' => 'Timeslot has been added'], 200);
+            // Clearing form and setting default values
+            return response()->json(['message' => 'Timeslot has been added.', 'clear_form' => true], 200);
         } else {
-            return response()->json(['error' => 'A system error occurred'], 500);
+            return response()->json(['error' => 'A system error occurred!'], 500);
         }
     }
 
@@ -116,7 +114,7 @@ class TimeslotsController extends Controller
 
             return response()->json($timeslot, 200);
         } else {
-            return response()->json(['error' => 'Timeslot not found'], 404);
+            return response()->json(['error' => 'Timeslot not found!'], 404);
         }
     }
 
@@ -146,7 +144,7 @@ class TimeslotsController extends Controller
 
         $this->validate($request, $rules, $messages);
 
-        $exists = Timeslot::where('time', Timeslot::createTimePeriod($request->from, $request->to))
+        $exists = Timeslot::where('time', Timeslot::createTimeTimeslot($request->from, $request->to))
             ->where('id', '<>', $id)
             ->first();
 
@@ -155,12 +153,12 @@ class TimeslotsController extends Controller
         }
 
         $data = $request->all();
-        $data['time'] = Timeslot::createTimePeriod($data['from'], $data['to']);
+        $data['time'] = Timeslot::createTimeTimeslot($data['from'], $data['to']);
 
         $timeslots = Timeslot::all();
 
         foreach ($timeslots as $timeslot) {
-            if (($timeslot->id != $id) && $timeslot->containsPeriod($data['time'])) {
+            if (($timeslot->id != $id) && $timeslot->containsTimeslot($data['time'])) {
                 $errors = [$data['time'] . ' falls within another timeslot (' . $timeslot->time
                     . ').Please adjust timeslots'];
                 return response()->json(['errors' => $errors], 422);
@@ -169,10 +167,9 @@ class TimeslotsController extends Controller
 
         if ($this->service->update($id, $data)) {
             event(new TimeslotsUpdated());
-            return response()->json(['message' => 'Timeslot updated'], 200);
+            return response()->json(['message' => 'Timeslot updated.'], 200);
         }
-
-        return response()->json(['error' => 'A system error occurred'], 500);
+        return response()->json(['error' => 'A system error occurred!'], 500);
     }
 
     /**
@@ -185,14 +182,14 @@ class TimeslotsController extends Controller
         $timeslot = Timeslot::find($id);
 
         if (!$timeslot) {
-            return response()->json(['error' => 'Timeslot not found'], 404);
+            return response()->json(['error' => 'Timeslot not found!'], 404);
         }
 
         if ($this->service->delete($id)) {
             event(new TimeslotsUpdated());
-            return response()->json(['message' => 'Timeslot has been deleted'], 200);
+            return response()->json(['message' => 'Timeslot has been deleted.'], 200);
         } else {
-            return response()->json(['error' => 'An unknown system error occurred'], 500);
+            return response()->json(['error' => 'An unknown system error occurred!'], 500);
         }
     }
 }

@@ -3,11 +3,12 @@
 namespace App\Services;
 
 use App\Models\Room;
-use App\Models\Course;
+use App\Models\Subject;
 use App\Models\Professor;
 use App\Models\CollegeClass;
 
-class DashboardService
+
+class DashboardService extends AbstractService
 {
     /**
      * Get data for display on the dashboard
@@ -17,31 +18,31 @@ class DashboardService
     public function getData()
     {
         $roomsCount = Room::count();
-        $coursesCount = Course::count();
+        $subjectsCount = Subject::count();
         $professorsCount = Professor::count();
         $classesCount = CollegeClass::count();
 
         $data = [
             'cards' => [
                 [
-                    'title' => 'Lecture Rooms',
-                    'icon' => 'home',
-                    'value' => $roomsCount
-                ],
-                [
-                    'title' => 'Courses',
-                    'icon' => 'book',
-                    'value' => $coursesCount
+                    'title' => 'Classes',
+                    'icon' => 'bi bi-calendar2-week',
+                    'value' => $classesCount
                 ],
                 [
                     'title' => 'Professors',
-                    'icon' => 'graduation-cap',
+                    'icon' => 'bi bi-person-badge',
                     'value' => $professorsCount
                 ],
                 [
-                    'title' => 'Classes',
-                    'icon' => 'users',
-                    'value' => $classesCount
+                    'title' => 'Subjects',
+                    'icon' => 'bi bi-journal-text',
+                    'value' => $subjectsCount
+                ],
+                [
+                    'title' => 'Rooms',
+                    'icon' => 'bi bi-house',
+                    'value' => $roomsCount
                 ]
             ]
         ];

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\DB;
+
 class Timeslot extends Model
 {
     protected $table = 'timeslots';
@@ -15,10 +17,10 @@ class Timeslot extends Model
      * @param string $timePeriod The time period
      * @return Boolean Value of test
      */
-    public function containsPeriod($timePeriod)
+    public function containsTimeslot($timeTimeslot)
     {
         $edgesA = self::getParts($this->time);
-        $edgesB = self::getParts($timePeriod);
+        $edgesB = self::getParts($timeTimeslot);
 
         return (($edgesB[0] >= $edgesA[0]) && $edgesB[2] <= $edgesA[2]);
     }
@@ -29,9 +31,9 @@ class Timeslot extends Model
      * @param string $timePeriod Time period
      * @return array Parts of given time period
      */
-    public static function getParts($timePeriod)
+    public static function getParts($timeTimeslot)
     {
-        preg_match('/(0?\d{1,2}):(\d{2})\s*\-\s*(\d{2}):(\d{2})/', $timePeriod, $matches);
+        preg_match('/(0?\d{1,2}):(\d{2})\s*\-\s*(\d{2}):(\d{2})/', $timeTimeslot, $matches);
 
         return array_slice($matches, 1);
     }
@@ -42,8 +44,19 @@ class Timeslot extends Model
      * @param string $from From section of period
      * @param string $to   To section of period
      */
-    public static function createTimePeriod($from, $to)
+    public static function createTimeTimeslot($from, $to)
     {
         return $from . ' - ' . $to;
+    }
+
+    public function loadTimeslots()
+    {
+        $columns = [
+            'a.id',
+            'a.time'
+        ];
+        $timeslots = DB::table('timeslots AS a')->select($columns)->get()->toArray();
+
+        return $timeslots;
     }
 }

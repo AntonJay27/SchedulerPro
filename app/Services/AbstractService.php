@@ -36,7 +36,7 @@ abstract class AbstractService
             $query = $this->search($query, $data['keyword']);
         }
 
-        // Deal with ordering of resources.
+        //Deal with ordering of resources.
         if (isset($data['order_by']) && $this->tableHasColumn($data['order_by'])) {
             $ranking = isset($data['ranking']) ? $data['ranking'] : 'asc';
 

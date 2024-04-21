@@ -71,7 +71,6 @@
     }
   }
 
-
   // BUTTON PLUGIN DEFINITION
   // ========================
 

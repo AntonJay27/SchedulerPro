@@ -7,9 +7,11 @@
     "require": {
         "php": ">=8.1.0",
         "barryvdh/laravel-dompdf": "^2.0",
+        "elibyy/tcpdf-laravel": "^11.1",
         "laravel/framework": "10.*.*",
         "laravel/tinker": "~2.8",
-        "pda/pheanstalk": "^4.0"
+        "pda/pheanstalk": "^4.0",
+        "predis/predis": "~1.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.8",

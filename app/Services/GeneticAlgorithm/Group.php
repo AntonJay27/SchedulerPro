@@ -26,13 +26,6 @@ class Group
     private $moduleIds;
 
     /**
-     * IDs of rooms not available to this class
-     *
-     * @var array
-     */
-    private $unavailableRooms;
-
-    /**
      * Instantiate a new group
      *
      * @param int $id Id of group
@@ -43,11 +36,6 @@ class Group
         $this->id = $id;
         $this->model = CollegeClassModel::find($id);
         $this->moduleIds = $moduleIds;
-        $this->unavailableRooms = [];
-
-        foreach ($this->model->unavailable_rooms as $room) {
-            $this->unavailableRooms[] = $room->id;
-        }
     }
 
     /**
@@ -78,15 +66,5 @@ class Group
     public function getModuleIds()
     {
         return $this->moduleIds;
-    }
-
-    /**
-     * Get unavailable rooms
-     *
-     * @return array Ids of rooms not available to this group
-     */
-    public function getUnavailableRooms()
-    {
-        return $this->unavailableRooms;
     }
 }

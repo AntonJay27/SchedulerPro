@@ -14,7 +14,7 @@ class AcademicPeriodsTableSeeder extends Seeder
           DB::table('academic_periods')
             ->insert([
                 ["name" => "Semester I"],
-                ["name" => "Semester II"],
+                ["name" => "Semester II"]
             ]);
     }
 }

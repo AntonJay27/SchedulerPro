@@ -9,7 +9,7 @@ class UnavailableTimeslot extends Model
     protected $guarded = ['id'];
 
     /**
-     * Get the day this unavailable period exists in
+     * Get the day this unavailable timeslot exists in
      *
      * @return App\Models\Day Day
      */
@@ -19,7 +19,7 @@ class UnavailableTimeslot extends Model
     }
 
     /**
-     * Get the timeslot this unavailable period exists in
+     * Get the timeslot this unavailable timeslot exists in
      *
      * @return App\Models\Timeslot Timeslot
      */

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\DB;
+
 class Room extends Model
 {
     /**
@@ -19,13 +21,26 @@ class Room extends Model
     protected $guarded = ['id'];
 
     /**
-     * Declare a relationship between this room and the courses
+     * Declare a relationship between this room and the subjects
      * that are allowed to use this room
      *
      * @return Illuminate\Database\Eloquent
      */
-    public function courses()
+    // public function subjects()
+    // {
+    //     return $this->belongsToMany(Subject::class, 'favourite_rooms', 'room_id', 'subject_id');
+    // }
+
+
+    public function loadRooms()
     {
-        return $this->belongsToMany(Course::class, 'favourite_rooms', 'room_id', 'course_id');
+        $columns = [
+            'a.id',
+            'a.name as room',
+            'a.lab'
+        ];
+        $rooms = DB::table('rooms AS a')->select($columns)->get()->toArray();
+
+        return $rooms;
     }
 }

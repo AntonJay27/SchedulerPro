@@ -13,12 +13,11 @@ class SecurityQuestionsSeeder extends Seeder
     {
         DB::table('security_questions')
             ->insert([
-                ["question" => "In which city were you born?"],
-                ["question" => "In which town was your dad born?"],
-                ["question" => "In which town was your mum born?"],
-                ["question" => "What's the name of your favourite cousin?"],
-                ["question" => "What's the name of your primary school?"],
-                ["question" => "What's the last name of your best childhood friend?"]
+                ["question" => "What is your favorite book or movie?"],
+                ["question" => "What is the name of the street you grew up on?"],
+                ["question" => "What is your favorite food?"],
+                ["question" => "What is the name of your childhood best friend?"],
+                ["question" => "What is your mother's maiden name?"]
             ]);
     }
 }

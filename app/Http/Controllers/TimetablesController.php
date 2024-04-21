@@ -8,13 +8,11 @@ use App\Events\TimetablesRequested;
 
 use App\Models\Day;
 use App\Models\Timetable;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class TimetablesController extends Controller
 {
-
     protected TimetableService $service;
 
     /**
@@ -33,11 +31,20 @@ class TimetablesController extends Controller
      * timetables table on dashboard
      *
      */
-    public function index()
+    public function index(Request $request)
     {
-        $timetables = Timetable::orderBy('created_at', 'DESC')->paginate(10);
+        $timetables = $this->service->all([
+            'keyword' => $request->has('keyword') ? $request->keyword : null,
+            'order_by' => 'name',
+            'paginate' => 'true',
+            'per_page' => 20
+        ]);
 
-        return view('dashboard.timetables', compact('timetables'));
+        if ($request->ajax()) {
+            return view('dashboard.timetables', compact('timetables'));
+        }
+
+        return view('dashboard.index', compact('timetables'));
     }
 
     /**
@@ -49,12 +56,13 @@ class TimetablesController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'name' => 'required',
+            'name' => 'required|unique:timetables,name',
             'academic_period_id' => 'required'
         ];
 
         $messages = [
-            'academic_period_id.required' => 'An academic period must be selected'
+            'name.unique' => 'Timetable name already exists.',
+            'academic_period_id.required' => 'An academic period must be selected.'
         ];
 
         $this->validate($request, $rules, $messages);
@@ -97,7 +105,7 @@ class TimetablesController extends Controller
 
         event(new TimetablesRequested($timetable));
 
-        return response()->json(['message' => 'Timetables are being generated.Check back later'], 200);
+        return response()->json(['message' => 'Timetables are being generated. Check back later...'], 200);
     }
 
     /**
@@ -116,6 +124,21 @@ class TimetablesController extends Controller
             $timetableData =  Storage::get($path);
             $timetableName = $timetable->name;
             return view('timetables.view', compact('timetableData', 'timetableName'));
+        }
+    }
+
+    public function destroy($id)
+    {
+        $timetable = Timetable::find($id);
+
+        if (!$timetable) {
+            return response()->json(['error' => 'Timetable not found!'], 404);
+        }
+
+        if ($this->service->delete($id)) {
+            return response()->json(['message' => 'Timetable has been deleted.'], 200);
+        } else {
+            return response()->json(['error' => 'An unknown system error occurred!'], 500);
         }
     }
 }

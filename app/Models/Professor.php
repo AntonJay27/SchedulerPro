@@ -21,14 +21,14 @@ class Professor extends Model
     protected $guarded = ['id'];
 
     /**
-     * Declare relationship between a professor and the courses
+     * Declare relationship between a professor and the subjects
      * he or she teaches
      *
      * @return Illuminate\Database\Eloquent
      */
-    public function courses()
+    public function subjects()
     {
-        return $this->belongsToMany(Course::class, 'courses_professors', 'professor_id', 'course_id');
+        return $this->belongsToMany(Subject::class, 'subjects_professors', 'professor_id', 'subject_id');
     }
 
     /**

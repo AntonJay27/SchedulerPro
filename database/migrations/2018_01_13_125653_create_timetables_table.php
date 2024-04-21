@@ -20,12 +20,11 @@ class CreateTimetablesTable extends Migration
             $table->string('file_url')->nullable();
             $table->text('chromosome')->nullable();
             $table->text('scheme')->nullable();
-            //$table->decimal('mutation_rate', 5, 4);
-            //$table->decimal('crossover_rate', 5, 4);
-            //$table->integer('population_count')->unsigned();
             $table->decimal('fitness', 8, 6)->nullable();
             $table->integer('generations')->unsigned()->nullable();
             $table->integer('violated_constraints')->unsigned()->nullable();
+            $table->longText('days');
+            $table->longText('schedules');
             $table->integer('user_id')->unsigned();
             $table->integer('academic_period_id')->unsigned();
             $table->timestamps();

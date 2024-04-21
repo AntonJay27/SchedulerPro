@@ -29,26 +29,25 @@ class ProfessorsService extends AbstractService
     {
         $professor = Professor::create([
             'name' => $data['name'],
-            'email' => $data['email']
         ]);
 
         if (!$professor) {
             return null;
         }
 
-        if (isset($data['course_ids'])) {
-            $professor->courses()->sync($data['course_ids']);
+        if (isset($data['subject_ids'])) {
+            $professor->subjects()->sync($data['subject_ids']);
         }
 
-        if (isset($data['unavailable_periods'])) {
-            foreach ($data['unavailable_periods'] as $period) {
-                $parts = explode("," , $period);
+        if (isset($data['unavailable_timeslots'])) {
+            foreach ($data['unavailable_timeslots'] as $timeslot) {
+                $parts = explode("," , $timeslot);
                 $dayId = $parts[0];
-                $periodId = $parts[1];
+                $timeslotId = $parts[1];
 
                 $professor->unavailable_timeslots()->create([
                     'day_id' => $dayId,
-                    'timeslot_id' => $periodId
+                    'timeslot_id' => $timeslotId
                 ]);
             }
         }
@@ -64,23 +63,23 @@ class ProfessorsService extends AbstractService
     public function show($id)
     {
         $professor = Professor::find($id);
-        $courseIds = [];
-        $periods = [];
+        $subjectIds = [];
+        $timeslots = [];
 
         if (!$professor) {
             return null;
         }
 
-        foreach ($professor->courses as $course) {
-            $courseIds[] = $course->id;
+        foreach ($professor->subjects as $subject) {
+            $subjectIds[] = $subject->id;
         }
 
-        foreach ($professor->unavailable_timeslots as $period) {
-            $periods[] = implode(",", [$period->day_id, $period->timeslot_id]);
+        foreach ($professor->unavailable_timeslots as $timeslot) {
+            $timeslots[] = implode(",", [$timeslot->day_id, $timeslot->timeslot_id]);
         }
 
-        $professor->course_ids = $courseIds;
-        $professor->periods = $periods;
+        $professor->subject_ids = $subjectIds;
+        $professor->timeslots = $timeslots;
 
         return $professor;
     }
@@ -102,18 +101,17 @@ class ProfessorsService extends AbstractService
 
         $professor->update([
             'name' => $data['name'],
-            'email' => $data['email']
         ]);
 
-        if (!isset($data['course_ids'])) {
-            $data['course_ids'] = [];
+        if (!isset($data['subject_ids'])) {
+            $data['subject_ids'] = [];
         }
 
-        $professor->courses()->sync($data['course_ids']);
+        $professor->subjects()->sync($data['subject_ids']);
 
-        if (isset($data['unavailable_periods'])) {
-            foreach ($data['unavailable_periods'] as $period) {
-                $parts = explode("," , $period);
+        if (isset($data['unavailable_timeslots'])) {
+            foreach ($data['unavailable_timeslots'] as $timeslot) {
+                $parts = explode("," , $timeslot);
                 $dayId = $parts[0];
                 $timeslotId = $parts[1];
 
@@ -130,18 +128,18 @@ class ProfessorsService extends AbstractService
                 }
             }
 
-            foreach ($professor->unavailable_timeslots as $period) {
-                if ($period->day && $period->timeslot) {
-                    $periodString = implode("," , [$period->day->id, $period->timeslot->id]);
+            foreach ($professor->unavailable_timeslots as $timeslot) {
+                if ($timeslot->day && $timeslot->timeslot) {
+                    $timeslotString = implode("," , [$timeslot->day->id, $timeslot->timeslot->id]);
                 }
 
-                if (!isset($data['unavailable_periods']) || !in_array($periodString, $data['unavailable_periods'])) {
-                    $period->delete();
+                if (!isset($data['unavailable_timeslots']) || !in_array($timeslotString, $data['unavailable_timeslots'])) {
+                    $timeslot->delete();
                 }
             }
         } else {
-            foreach ($professor->unavailable_timeslots as $period) {
-                $period->delete();
+            foreach ($professor->unavailable_timeslots as $timeslot) {
+                $timeslot->delete();
             }
         }
 

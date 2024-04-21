@@ -1,7 +1,7 @@
 <?php
 namespace App\Services\GeneticAlgorithm;
 
-use App\Models\Course;
+use App\Models\Subject;
 use App\Models\CollegeClass as CollegeClassModel;
 
 class Module
@@ -21,7 +21,7 @@ class Module
     private $moduleModel;
 
     /**
-     * IDs of professors handling this course
+     * IDs of professors handling this subject
      *
      * @var array
      */
@@ -37,13 +37,13 @@ class Module
     /**
      * Create a new module
      *
-     * @param int $moduleId ID of module or course
+     * @param int $moduleId ID of module or subject
      * @param array  $professorIds Professors treating this module
      */
     public function __construct($moduleId, $professorIds)
     {
         $this->moduleId = $moduleId;
-        $this->moduleModel = Course::find($moduleId);
+        $this->moduleModel = Subject::find($moduleId);
         $this->professorIds = $professorIds;
         $this->allocatedSlots = 0;
     }
@@ -65,7 +65,7 @@ class Module
      */
     public function getModuleCode()
     {
-        return $this->moduleModel->course_code;
+        return $this->moduleModel->subject_code;
     }
 
     /**
@@ -86,7 +86,7 @@ class Module
     public function getSlots($groupId)
     {
         $group = CollegeClassModel::find($groupId);
-        return $group->courses()->where('courses.id', $this->moduleId)->first()->pivot->meetings ;
+        return $group->subjects()->where('subjects.id', $this->moduleId)->first()->pivot->units ;
     }
 
     /**

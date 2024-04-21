@@ -10,7 +10,7 @@
 		@include('partials.styles')
 		@yield('styles')
 
-		<title>Reset Password | Timetable</title>
+		<title>Request Password | SchedulerPro</title>
     </head>
 
     <body class="login-page">
@@ -19,34 +19,34 @@
                 <div class="col-xs-12 col-md-4 col-sm-8 col-lg-4 col-md-offset-4 col-sm-offset-2 col-lg-offset-4">
                     <div id="login-form-container">
                         <div class="login-form-header">
-                            <h3 class="text-center">timetable</h3>
+                            <h3 class="text-center site-logo">Scheduler<span>Pro</span></h3>
                         </div>
 
                         <div class="login-form-body">
                             <div class="row">
-                                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="pass_r">
                                      <form method="POST" action="{{ URL::to('/request_reset') }}">
                                         {!! csrf_field() !!}
                                         @include('errors.form_errors')
 
-                                        <div class="form-group">
-                                            <label>Enter your email</label>
-                                            <input type="text" class="form-control" placeholder="Email" name="email">
+                                        <div class="login-box">
+                                            <input type="text" name="email">
+                                            <label class="placeholder">Email</label>
                                         </div>
 
                                         @if (!empty($user->security_question))
-                                        <div class="form-group">
-                                            <p>{{ $user->security_question->question }}</p>
+                                        <div class="form-group" id="pass_q">
+                                            <p><span>Security_Question:</span> {{ $user->security_question->question }}</p>
                                         </div>
 
-                                        <div class="form-group">
-                                            <label>Your Answer</label>
-                                            <input type="text" class="form-control" name="security_question_answer">
+                                        <div class="login-box">
+                                            <input type="text" name="security_question_answer">
+                                            <label class="placeholder">Answer</label>
                                         </div>
                                         @endif
 
-                                        <div class="form-group">
-                                            <input type="submit" name="submit" value="SUBMIT" class="btn btn-lg btn-block btn-primary">
+                                        <div class="login-btn">
+                                            <input type="submit" name="submit" value="SUBMIT">
                                         </div>
                                     </form>
                                 </div>

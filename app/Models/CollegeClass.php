@@ -13,27 +13,19 @@ class CollegeClass extends Model
 
     protected $guarded = ['id'];
 
-    protected $relations = ['courses', 'unavailable_rooms'];
+    protected $relations = ['subjects'];
 
-    /**
-     * Get the rooms that are not available to this class
-     */
-    public function unavailable_rooms()
+    public function subjects()
     {
-        return $this->belongsToMany(Room::class, 'unavailable_rooms', 'class_id', 'room_id');
-    }
-
-    public function courses()
-    {
-        return $this->belongsToMany(Course::class, 'courses_classes', 'class_id', 'course_id')
-            ->withPivot(['meetings', 'academic_period_id']);
+        return $this->belongsToMany(Subject::class, 'subjects_classes', 'class_id', 'subject_id')
+            ->withPivot(['units','academic_period_id']);
     }
 
     /**
-     * Get classes with no courses set up for them
+     * Get classes with no subjects set up for them
      */
-    public function scopeHavingNoCourses($query)
+    public function scopeHavingNoSubjects($query)
     {
-        return $query->has('courses', '<', 1);
+        return $query->has('subjects', '<', 1);
     }
 }

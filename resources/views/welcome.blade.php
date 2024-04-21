@@ -65,6 +65,7 @@
         </style>
     </head>
     <body>
+        <div class="mt-4"></div>
         <div class="flex-center position-ref full-height">
             @if (Route::has('login'))
                 <div class="top-right links">

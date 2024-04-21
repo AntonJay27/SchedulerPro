@@ -10,7 +10,7 @@
 		@include('partials.styles')
 		@yield('styles')
 
-		<title>Reset Password | Timetable</title>
+		<title>Reset Password | SchedulerPro</title>
     </head>
 
     <body class="login-page">
@@ -19,7 +19,7 @@
                 <div class="col-xs-12 col-md-4 col-sm-8 col-lg-4 col-md-offset-4 col-sm-offset-2 col-lg-offset-4">
                     <div id="login-form-container">
                         <div class="login-form-header">
-                            <h3 class="text-center">timetable</h3>
+                            <h3 class="text-center site-logo">Scheduler<span>Pro</span></h3>
                         </div>
 
                         <div class="login-form-body">
@@ -29,13 +29,13 @@
                                         {!! csrf_field() !!}
                                         @include('errors.form_errors')
 
-                                        <div class="form-group">
-                                            <label>Token</label>
-                                            <input type="text" class="form-control" placeholder="Enter token sent to your mail" name="token">
+                                        <div class="login-box">
+                                            <label class="placeholder">Token</label>
+                                            <input type="text" placeholder="Enter token sent to your mail" name="token">
                                         </div>
 
-                                        <div class="form-group">
-                                            <input type="submit" name="submit" value="SUBMIT" class="btn btn-lg btn-block btn-primary">
+                                        <div class="login-btn">
+                                            <input type="submit" name="submit" value="SUBMIT">
                                         </div>
                                     </form>
                                 </div>

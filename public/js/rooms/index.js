@@ -9,10 +9,10 @@ App.extend(Resource, Room);
 
 Room.prototype.prepareForUpdate =  function(resource) {
     $('input[name=name]').val(resource.name);
-    $('input[name=capacity]').val(resource.capacity);
+    $('select[name=lab]').val(resource.lab);
 };
 
 window.addEventListener('load', function(){
-    var room = new Room('/rooms', 'Lecture Room');
+    var room = new Room(`rooms`, 'Room');
     room.init();
 });

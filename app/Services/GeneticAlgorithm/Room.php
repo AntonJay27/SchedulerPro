@@ -49,14 +49,4 @@ class Room
     {
         return $this->model->name;
     }
-
-    /**
-     * Get the capacity of the room
-     *
-     * @return int The capacity of the room
-     */
-    public function getCapacity()
-    {
-        return $this->model->capacity;
-    }
 }

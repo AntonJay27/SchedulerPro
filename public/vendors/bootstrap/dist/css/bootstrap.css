@@ -3445,6 +3445,7 @@ fieldset[disabled] .btn-link:focus {
   line-height: 1.5;
   border-radius: 3px;
 }
+
 .btn-xs,
 .btn-group-xs > .btn {
   padding: 1px 5px;
@@ -5930,13 +5931,6 @@ button.close {
 .modal-backdrop.in {
   filter: alpha(opacity=50);
   opacity: .5;
-}
-.modal-header {
-  padding: 15px;
-  border-bottom: 1px solid #e5e5e5;
-}
-.modal-header .close {
-  margin-top: -2px;
 }
 .modal-title {
   margin: 0;

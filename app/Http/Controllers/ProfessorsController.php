@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Response;
 use Illuminate\Http\Request;
 use App\Services\ProfessorsService;
 
 use App\Models\Day;
-use App\Models\Course;
+use App\Models\Subject;
 use App\Models\Timeslot;
 use App\Models\Professor;
-use App\Models\UnavailableTimeslot;
 
 class ProfessorsController extends Controller
 {
@@ -48,7 +46,7 @@ class ProfessorsController extends Controller
             'per_page' => 20
         ]);
 
-        $courses = Course::all();
+        $subjects = Subject::all();
         $days = Day::all();
         $timeslots = Timeslot::all();
 
@@ -56,7 +54,7 @@ class ProfessorsController extends Controller
             return view('professors.table', compact('professors'));
         }
 
-        return view('professors.index', compact('professors', 'courses', 'days', 'timeslots'));
+        return view('professors.index', compact('professors', 'subjects', 'days', 'timeslots'));
     }
 
     /**
@@ -70,18 +68,14 @@ class ProfessorsController extends Controller
             'name' => 'required'
         ];
 
-        if ($request->has('email') && $request->email) {
-            $rules['email'] = 'email';
-        }
-
         $this->validate($request, $rules);
 
         $professor = $this->service->store($request->all());
 
         if ($professor) {
-            return response()->json(['message' => 'Professor added'], 200);
+            return response()->json(['message' => 'Professor added.'], 200);
         } else {
-            return response()->json(['error' => 'An unknown system error occurred'], 500);
+            return response()->json(['error' => 'An unknown system error occurred!'], 500);
         }
     }
 
@@ -98,7 +92,7 @@ class ProfessorsController extends Controller
         if ($professor) {
             return response()->json($professor, 200);
         } else {
-            return response()->json(['errors' => ['Professor not found']], 404);
+            return response()->json(['errors' => ['Professor not found!']], 404);
         }
     }
 
@@ -113,24 +107,19 @@ class ProfessorsController extends Controller
         $professor = Professor::find($id);
 
         if (!$professor) {
-            return response()->json(['errors' => ['Professor does not exist']], 404);
+            return response()->json(['errors' => ['Professor does not exist!']], 404);
         }
 
         $rules = [
             'name' => 'required',
         ];
 
-        if ($request->has('email') && $request->email) {
-            $rules['email'] = 'email';
-        }
-
         $this->validate($request, $rules);
 
         $professor = $this->service->update($id, $request->all());
 
-        return response()->json(['message' => 'Professor updated'], 200);
+        return response()->json(['message' => 'Professor updated.'], 200);
     }
-
 
     /**
      * Delete the professor with the given id
@@ -142,13 +131,13 @@ class ProfessorsController extends Controller
         $professor = Professor::find($id);
 
         if (!$professor) {
-            return response()->json(['error' => 'Professor not found'], 404);
+            return response()->json(['error' => 'Professor not found!'], 404);
         }
 
         if ($this->service->delete($id)) {
-            return response()->json(['message' => 'Professor has been deleted'], 200);
+            return response()->json(['message' => 'Professor has been deleted.'], 200);
         } else {
-            return response()->json(['error' => 'An unknown system error occurred'], 500);
+            return response()->json(['error' => 'An unknown system error occurred!'], 500);
         }
     }
 }

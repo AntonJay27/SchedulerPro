@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\GeneticAlgorithm;
 
 use App\Models\Timeslot as TimeslotModel;

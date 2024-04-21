@@ -22,7 +22,7 @@ class CollegeClassesService extends AbstractService
     protected $showWithRelations = true;
 
     protected $customFilters = [
-        'no_course' => 'getClassesWithNoCourse'
+        'no_subject' => 'getClassesWithNoSubject'
     ];
 
     /**
@@ -47,39 +47,13 @@ class CollegeClassesService extends AbstractService
     {
         $class = CollegeClass::create([
             'name' => $data['name'],
-            'size' => $data['size']
         ]);
 
         if (!$class) {
             return null;
         }
 
-        $class->unavailable_rooms()->sync($data['unavailable_rooms']);
-        $class->courses()->sync($data['courses']);
-
-        return $class;
-    }
-
-    /**
-     * Get class with given id
-     *
-     * @param int $id The class' id
-     */
-    public function show($id)
-    {
-        $class = parent::show($id);
-
-        if (!$class) {
-            return null;
-        }
-
-        $roomIds = [];
-
-        foreach ($class->unavailable_rooms as $room) {
-            $roomIds[] = $room->id;
-        }
-
-        $class->room_ids = $roomIds;
+        $class->subjects()->sync($data['subjects']);
 
         return $class;
     }
@@ -100,28 +74,22 @@ class CollegeClassesService extends AbstractService
 
         $class->update([
             'name' => $data['name'],
-            'size' => $data['size']
         ]);
 
-        if (!isset($data['unavailable_rooms'])) {
-            $data['unavailable_rooms'] = [];
+        if (!isset($data['subjects'])) {
+            $data['subjects'] = [];
         }
-
-        if (!isset($data['courses'])) {
-            $data['courses'] = [];
-        }
-
-        $class->unavailable_rooms()->sync($data['unavailable_rooms']);
-        $class->courses()->sync($data['courses']);
+        
+        $class->subjects()->sync($data['subjects']);
 
         return $class;
     }
 
     /**
-     * Return query with filter applied to select classes with no course added for them
+     * Return query with filter applied to select classes with no subject added for them
      */
-    public function getClassesWithNoCourse($query)
+    public function getClassesWithNoSubject($query)
     {
-        return $query->havingNoCourses();
+        return $query->havingNoSubjects();
     }
 }

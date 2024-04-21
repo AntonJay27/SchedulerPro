@@ -403,15 +403,10 @@ class Timetable
         $days = Day::all();
 
         foreach ($this->classes as $id => $classA) {
-            $roomCapacity = $this->getRoom($classA->getRoomId())->getCapacity();
             $groupSize = $this->getGroup($classA->getGroupId())->getSize();
             $professor = $this->getProfessor($classA->getProfessorId());
             $timeslot = $this->getTimeslot($classA->getTimeslotId());
             $module = $this->getModule($classA->getModuleId());
-
-            if ($roomCapacity < $groupSize) {
-                $clashes++;
-            }
 
             // Check if we don't have any lecturer forced to teach at his occupied time
             if (in_array($timeslot->getId(), $professor->getOccupiedSlots())) {
@@ -426,11 +421,6 @@ class Timetable
                         break;
                     }
                 }
-            }
-
-
-            if (in_array($classA->getRoomId(), $this->getGroup($classA->getGroupId())->getUnavailableRooms())) {
-                $clashes++;
             }
 
             // Check if professor is available
@@ -456,7 +446,7 @@ class Timetable
             }
         }
 
-        // Constraint to ensure that no course occurs at two different locations
+        // Constraint to ensure that no subject occurs at two different locations
         // and or at non-consecutive time slots
         foreach ($days as $day) {
             foreach ($this->getGroups() as $group) {

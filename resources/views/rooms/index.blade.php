@@ -1,19 +1,27 @@
 @extends('layouts.app')
-
 @section('title')
 Rooms
 @endsection
-
 @section('content')
+@include('bootstrap.icons')
+
+<style type="text/css">
+    .select-control{
+        border-radius: 0 !important;
+        height: 40px;
+        font-size: 1.2em;
+    }
+</style>
+
 <div class="col-xs-12 col-sm-12 col-md-10 col-lg-10 page-container">
     <div class="row">
-        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 page-title">
-            <h1><span class="fa fa-home"></span> Rooms</h1>
+        <div class="page_title">
+            <span>Rooms</span>
         </div>
     </div>
 
     <div class="menubar">
-        @include('partials.menu_bar', ['buttonTitle' => 'Add New Room'])
+        @include('partials.menu_bar', ['buttonTitle' => ''])
     </div>
 
     <div class="page-body" id="resource-container">
@@ -21,9 +29,16 @@ Rooms
     </div>
 </div>
 
+<input type="hidden" id="txt_baseUrl" value="<?php echo config('app.url'); ?>">
+
 @include('rooms.modals')
 @endsection
 
 @section('scripts')
-<script src="{{URL::asset('/js/rooms/index.js')}}"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        let baseUrl = $('#txt_baseUrl').val();
+    });
+</script>
+<script src="{{URL::asset('public/js/rooms/index.js')}}"></script>
 @endsection

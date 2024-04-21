@@ -1,5 +1,5 @@
 <div class="modal" id="confirm-dialog">
-    <div class="modal-dialog">
+    <div class="modal-dialog" >
         <div class="modal-content">
             <form action="" method="POST" id="resource-delete-form" class='delete-form'>
             {{ method_field('DELETE') }}
@@ -7,7 +7,7 @@
 
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">
-                    <span aria-hidden="true">x</span>
+                    <span aria-hidden="true"><i class="bi bi-x-square"></i></span>
                 </button>
 
                 <h4 id="delete-dialog-header"></h4>

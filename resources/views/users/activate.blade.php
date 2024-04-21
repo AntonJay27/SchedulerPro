@@ -10,7 +10,7 @@
 		@include('partials.styles')
 		@yield('styles')
 
-		<title>Activate Account | Timetable</title>
+		<title>Activate Account | SchedulerPro</title>
     </head>
 
     <body class="login-page">
@@ -19,50 +19,73 @@
                 <div class="col-xs-12 col-md-4 col-sm-8  col-md-offset-4 col-sm-offset-2">
                     <div id="activation-form-container">
                         <div class="login-form-header">
-                            <h3 class="text-center">timetable</h3>
+                            <h3 class="text-center site-logo">Scheduler<span>Pro</span></h3>
                         </div>
 
                         <div class="login-form-body">
                             <div class="row">
                                 <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                     <form method="POST" action="{{ URL::to('/users/activate') }}">
+                                     <form method="POST" action="{{ URL::to('/users/activate') }}" id="activate_account">
                                         {!! csrf_field() !!}
                                         @include('errors.form_errors')
 
-                                        <div class="form-group">
-                                            <label>Name</label>
-                                            <input type="text" class="form-control" placeholder="Name" name="name" value="{{ $user->name }}">
+                                        <div class="login-box">
+                                            <label class="placeholder">Name</label>
+                                            <input type="text" name="name" value="{{ $user->name }}">
                                         </div>
 
-                                        <div class="form-group">
-                                            <label>Password</label>
-                                            <input type="password" class="form-control" placeholder="Password" name="password">
+                                        <div class="login-box">
+                                            <label class="placeholder">New Password</label>
+                                            <input type="password" name="password" id="new_password">
+
+                                            <img
+                                                src="{{ URL('storage/eye-close.png') }}"
+                                                id="toggle"
+                                                onclick="showHide();" />
+
+                                            <script type="text/javascript">
+                                                const password = document.getElementById("new_password");
+                                                const toggle = document.getElementById("toggle");
+
+                                                function showHide() {
+                                                    if (password.type == "password") {
+                                                        password.setAttribute("type", "text");
+                                                        document.getElementById("toggle").src =
+                                                            "{{ URL('storage/eye-open.png') }}";
+                                                    } else {
+                                                        password.setAttribute("type", "password");
+                                                        document.getElementById("toggle").src =
+                                                            "{{ URL('storage/eye-close.png') }}";
+                                                    }
+                                                }
+                                            </script>
                                         </div>
 
-                                        <div class="form-group">
-                                            <label>Confirm Password</label>
-                                            <input type="password" class="form-control" placeholder="Password" name="password_confirmation">
+                                        <div class="login-box">
+                                            <label class="placeholder">Confirm New Password</label>
+                                            <input type="password" name="password_confirmation">
                                         </div>
 
-                                        <div class="form-group">
-                                            <label>Security Question</label>
+                                        <div class="login-box">
+                                            <label class="placeholder">Security Question</label>
 
                                             <div class="select2-wrapper">
-                                                <select name="security_question_id" class="form-control select2">
+                                                <select name="security_question_id" id="select_width">
+                                                    <option selected disabled>Select a question to answer</option>
                                                     @foreach ($questions as $question)
-                                                    <option value="{{ $question->id }}">{{ $question->question }}</option>
+                                                    <option value="{{ $question->id }}" id="activate_account">{{ $question->question }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
                                         </div>
 
-                                        <div class="form-group">
-                                            <label>Your Answer</label>
+                                        <div class="login-box">
+                                            <label class="placeholder">Your Answer</label>
                                             <input type="text" class="form-control" name="security_question_answer">
                                         </div>
 
-                                        <div class="form-group">
-                                            <input type="submit" name="submit" value="ACTIVATE ACCOUNT" class="btn btn-lg btn-block btn-primary">
+                                        <div class="login-btn">
+                                            <input type="submit" name="submit" value="ACTIVATE ACCOUNT" id="activate_btn">
                                         </div>
                                     </form>
                                 </div>

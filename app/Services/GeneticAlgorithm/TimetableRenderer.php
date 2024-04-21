@@ -6,7 +6,7 @@ use Storage;
 
 use App\Models\Day as DayModel;
 use App\Models\Room as RoomModel;
-use App\Models\Course as CourseModel;
+use App\Models\Subject as SubjectModel;
 use App\Models\Timeslot as TimeslotModel;
 use App\Models\CollegeClass as CollegeClassModel;
 use App\Models\Professor as ProfessorModel;
@@ -35,9 +35,8 @@ class TimetableRenderer
         $chromosome = explode(",", $this->timetable->chromosome);
         $scheme = explode(",", $this->timetable->scheme);
         $data = $this->generateData($chromosome, $scheme);
-
         $days = $this->timetable->days()->orderBy('id', 'ASC')->get();
-        $timeslots = TimeslotModel::orderBy('rank', 'ASC')->get();
+        $timeslots = TimeslotModel::orderBy('id', 'ASC')->get();
         $classes = CollegeClassModel::all();
 
         $tableTemplate = '<h3 class="text-center">{TITLE}</h3>
@@ -51,37 +50,36 @@ class TimetableRenderer
                                 </tbody>
                             </table>
                         </div>';
-
         $content = "";
 
         foreach ($classes as $class) {
             $header = "<tr class='table-head'>";
-            $header .= "<td>Days</td>";
+            $header .= "<td>Time</td>";
 
-            foreach ($timeslots as $timeslot) {
-                $header .= "\t<td>" . $timeslot->time . "</td>";
+            foreach ($days as $day) {
+                $header .= "<td>" . strtoupper($day->short_name) . "</td>";
             }
-
             $header .= "</tr>";
 
             $body = "";
 
-            foreach ($days as $day) {
-                $body .= "<tr><td>" . strtoupper($day->short_name) . "</td>";
-                foreach ($timeslots as $timeslot) {
+            foreach ($timeslots as $timeslot) {
+                $body .= "<tr>\t<td>" . $timeslot->time . "</td>";
+                foreach ($days as $day) {
                     if (isset($data[$class->id][$day->name][$timeslot->time])) {
                         $body .= "<td class='text-center'>";
                         $slotData = $data[$class->id][$day->name][$timeslot->time];
-                        $courseCode = $slotData['course_code'];
-                        $courseName = $slotData['course_name'];
+                        $subjectName = $slotData['subject_name'];
+                        $subjectCode = $slotData['subject_code'];
                         $professor = $slotData['professor'];
                         $room = $slotData['room'];
-
-                        $body .= "<span class='course_code'>{$courseCode}</span><br />";
+                        
+                        $body .= "<span class='subject_name'>{$subjectName}</span><br />";
+                        $body .= "<span class='subject_code'>({$subjectCode})</span><br />";
                         $body .= "<span class='room pull-left'>{$room}</span>";
                         $body .= "<span class='professor pull-right'>{$professor}</span>";
-
                         $body .= "</td>";
+
                     } else {
                         $body .= "<td></td>";
                     }
@@ -121,10 +119,10 @@ class TimetableRenderer
                 $schemeIndex += 1;
             }
 
-            $courseId = $scheme[$schemeIndex];
+            $subjectId = $scheme[$schemeIndex];
 
             $class = CollegeClassModel::find($groupId);
-            $course = CourseModel::find($courseId);
+            $subject = SubjectModel::find($subjectId);
 
             $timeslotGene = $chromosome[$chromosomeIndex];
             $roomGene = $chromosome[$chromosomeIndex + 1];
@@ -153,8 +151,8 @@ class TimetableRenderer
                 $data[$groupId][$day->name][$timeslot->time] = [];
             }
 
-            $data[$groupId][$day->name][$timeslot->time]['course_code'] = $course->course_code;
-            $data[$groupId][$day->name][$timeslot->time]['course_name'] = $course->name;
+            $data[$groupId][$day->name][$timeslot->time]['subject_name'] = $subject->name;
+            $data[$groupId][$day->name][$timeslot->time]['subject_code'] = $subject->subject_code;
             $data[$groupId][$day->name][$timeslot->time]['room'] = $room->name;
             $data[$groupId][$day->name][$timeslot->time]['professor'] = $professor->name;
 

@@ -2,8 +2,6 @@
 
 namespace App\Listeners;
 
-
-use App\Jobs\NotifyProfessors;
 use App\Jobs\RenderTimetables;
 use App\Jobs\GenerateTimetables;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -24,7 +22,6 @@ class TimetableEventSubscriber implements ShouldQueue
     public function onTimetablesGenerated($event)
     {
         dispatch(new RenderTimetables($event->timetable));
-        dispatch(new NotifyProfessors($event->timetable));
     }
 
 

@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
         // App data seeders
         $this->call(RoomsTableSeeder::class);
         $this->call(TimeslotsTableSeeder::class);
-        $this->call(CoursesTableSeeder::class);
+        $this->call(SubjectsTableSeeder::class);
         $this->call(ProfessorsTableSeeder::class);
         $this->call(ClassesTableSeeder::class);
     }

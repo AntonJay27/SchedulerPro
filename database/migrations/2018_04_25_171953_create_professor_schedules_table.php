@@ -19,7 +19,7 @@ class CreateProfessorSchedulesTable extends Migration
             $table->integer('day_id')->unsigned();
             $table->integer('timeslot_id')->unsigned();
             $table->integer('professor_id')->unsigned();
-            $table->integer('course_id')->unsigned();
+            $table->integer('subject_id')->unsigned();
             $table->integer('class_id')->unsigned();
             $table->integer('room_id')->unsigned();
             $table->timestamps();
@@ -44,9 +44,9 @@ class CreateProfessorSchedulesTable extends Migration
                 ->on('professors')
                 ->onDelete('cascade');
 
-            $table->foreign('course_id')
+            $table->foreign('subject_id')
                 ->references('id')
-                ->on('courses')
+                ->on('subjects')
                 ->onDelete('cascade');
 
             $table->foreign('class_id')

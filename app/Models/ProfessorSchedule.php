@@ -18,7 +18,7 @@ class ProfessorSchedule extends Model
     /**
      * Relations for this model
      */
-    protected $relations = ['timetable', 'professor', 'course', 'day', 'timeslot', 'room', 'college_class'];
+    protected $relations = ['timetable', 'professor', 'subject', 'day', 'timeslot', 'room', 'college_class'];
 
     /**
      * Timetable for this schedule
@@ -29,11 +29,11 @@ class ProfessorSchedule extends Model
     }
 
     /**
-     * Course for this schedule
+     * Subject for this schedule
      */
-    public function course()
+    public function subject()
     {
-        return $this->belongsTo(Course::class, 'course_id');
+        return $this->belongsTo(Subject::class, 'subject_id');
     }
 
     /**

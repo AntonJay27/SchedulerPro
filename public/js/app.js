@@ -1,4 +1,6 @@
+let baseUrl = $('#txt_baseUrl').val();
 var App = {
+
     Init: function () {
         $('.alert.fade-in').delay(10000).slideUp('fade-in');
 
@@ -102,7 +104,7 @@ var App = {
 
         // Submit form via ajax
         var ajaxData = {
-            url: actionURL,
+            url: `${baseUrl}${actionURL}`,
             type: 'POST',
             data: formData,
             processData: false,
@@ -157,7 +159,7 @@ var App = {
                 }
 
                 var text = (response.status == 422) ?
-                    'The form submission failed. Check form for details.' :
+                    'The form submission failed! Check form for details.' :
                     'Oops! A system error occurred';
 
                 new PNotify({

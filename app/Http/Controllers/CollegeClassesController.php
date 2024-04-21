@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\CollegeClassesService;
-
 use App\Models\Room;
-use App\Models\Course;
+use App\Models\Subject;
 use App\Models\CollegeClass;
 use App\Models\AcademicPeriod;
 
@@ -44,15 +43,14 @@ class CollegeClassesController extends Controller
         ]);
 
         $rooms = Room::all();
-        $courses = Course::all();
+        $subjects = Subject::all();
         $academicPeriods = AcademicPeriod::all();
-
 
         if ($request->ajax()) {
             return view('classes.table', compact('classes', 'academicPeriods'));
         }
 
-        return view('classes.index', compact('classes', 'rooms', 'courses', 'academicPeriods'));
+        return view('classes.index', compact('classes', 'rooms', 'subjects', 'academicPeriods'));
     }
 
     /**
@@ -65,7 +63,6 @@ class CollegeClassesController extends Controller
     {
         $rules = [
             'name' => 'required|unique:classes',
-            'size' => 'required'
         ];
 
         $this->validate($request, $rules);
@@ -73,9 +70,9 @@ class CollegeClassesController extends Controller
         $class = $this->service->store($request->all());
 
         if ($class) {
-            return response()->json(['message' => 'Class added'], 200);
+            return response()->json(['message' => 'Class added.'], 200);
         } else {
-            return response()->json(['error' => 'A system error occurred'], 500);
+            return response()->json(['error' => 'A system error occurred!'], 500);
         }
     }
 
@@ -92,7 +89,7 @@ class CollegeClassesController extends Controller
         if ($class) {
             return response()->json($class, 200);
         } else {
-            return response()->json(['error' => 'Class not found'], 404);
+            return response()->json(['error' => 'Class not found!'], 404);
         }
     }
 
@@ -107,7 +104,6 @@ class CollegeClassesController extends Controller
     {
         $rules = [
             'name' => 'required|unique:classes,name,' . $id,
-            'size' => 'required'
         ];
 
         $this->validate($request, $rules);
@@ -115,12 +111,12 @@ class CollegeClassesController extends Controller
         $class = CollegeClass::find($id);
 
         if (!$class) {
-            return response()->json(['error' => 'Class not found'], 404);
+            return response()->json(['error' => 'Class not found!'], 404);
         }
 
         $class = $this->service->update($id, $request->all());
 
-        return response()->json(['message' => 'Class updated'], 200);
+        return response()->json(['message' => 'Class updated.'], 200);
     }
 
     /**
@@ -134,13 +130,13 @@ class CollegeClassesController extends Controller
         $class = CollegeClass::find($id);
 
         if (!$class) {
-            return response()->json(['error' => 'Class not found'], 404);
+            return response()->json(['error' => 'Class not found!'], 404);
         }
 
         if ($this->service->delete($id)) {
-            return response()->json(['message' => 'Class has been deleted'], 200);
+            return response()->json(['message' => 'Class has been deleted.'], 200);
         } else {
-            return response()->json(['error' => 'An unknown system error occurred'], 500);
+            return response()->json(['error' => 'An unknown system error occurred!'], 500);
         }
     }
 }

@@ -2,24 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use Response;
 use Illuminate\Http\Request;
-use App\Services\CoursesService;
+use App\Services\SubjectsService;
 
-use App\Models\Course;
+use App\Models\Subject;
 use App\Models\Professor;
 
-class CoursesController extends Controller
+class SubjectsController extends Controller
 {
     /**
      * Service class for handling operations relating to this
      * controller
      *
-     * @var App\Services\CoursesService $service
+     * @var App\Services\SubjectsService $service
      */
     protected $service;
 
-    public function __construct(CoursesService $service)
+    public function __construct(SubjectsService $service)
     {
         $this->middleware('auth');
         $this->middleware('activated');
@@ -27,16 +26,16 @@ class CoursesController extends Controller
     }
 
     /**
-     * Get a listing of courses
+     * Get a listing of subjects
      *
      * @param Illuminate\Http\Request $request The HTTP request
      */
     public function index(Request $request)
     {
-        $courses = $this->service->all([
+        $subjects = $this->service->all([
             'keyword' => $request->has('keyword') ? $request->keyword : null,
             'filter' => $request->has('filter') ? $request->filter : null,
-            'order_by' => 'course_code',
+            'order_by' => 'subject_code',
             'paginate' => 'true',
             'per_page' => 20
         ]);
@@ -44,14 +43,14 @@ class CoursesController extends Controller
         $professors = Professor::all();
 
         if ($request->ajax()) {
-            return view('courses.table', compact('courses'));
+            return view('subjects.table', compact('subjects'));
         }
 
-        return view('courses.index', compact('courses', 'professors'));
+        return view('subjects.index', compact('subjects', 'professors'));
     }
 
     /**
-     * Add a new course
+     * Add a new subject
      *
      * @param Illuminate\Http\Request $request The HTTP request
      */
@@ -59,21 +58,21 @@ class CoursesController extends Controller
     {
         $rules = [
             'name' => 'required',
-            'course_code' => 'required|unique:courses,course_code',
+            'subject_code' => 'required|unique:subjects,subject_code',
         ];
 
         $messages = [
-            'name.unique' => 'This course already exists',
+            'name.unique' => 'This subject already exists',
         ];
 
         $this->validate($request, $rules, $messages);
 
-        $course = $this->service->store($request->all());
+        $subject = $this->service->store($request->all());
 
-        if ($course) {
-            return response()->json(['message' => 'Course added'], 200);
+        if ($subject) {
+            return response()->json(['message' => 'Subject added.'], 200);
         } else {
-            return response()->json(['error' => 'A system error occurred'], 500);
+            return response()->json(['error' => 'A system error occurred!'], 500);
         }
     }
 
@@ -85,12 +84,12 @@ class CoursesController extends Controller
      */
     public function show($id, Request $request)
     {
-        $course = $this->service->show($id);
+        $subject = $this->service->show($id);
 
-        if ($course) {
-            return response()->json($course, 200);
+        if ($subject) {
+            return response()->json($subject, 200);
         } else {
-            return response()->json(['error' => 'Course not found'], 404);
+            return response()->json(['error' => 'Subject not found!'], 404);
         }
     }
 
@@ -104,43 +103,43 @@ class CoursesController extends Controller
     {
         $rules = [
             'name' => 'required',
-            'course_code' => 'required|unique:courses,course_code,' . $id
+            'subject_code' => 'required|unique:subjects,subject_code,' . $id
         ];
 
         $messages = [
-            'name.unique' => 'This course already exists'
+            'name.unique' => 'This subject already exists'
         ];
 
         $this->validate($request, $rules, $messages);
 
-        $course = $this->service->show($id);
+        $subject = $this->service->show($id);
 
-        if (!$course) {
-            return response()->json(['error' => 'Course not found'], 404);
+        if (!$subject) {
+            return response()->json(['error' => 'Subject not found!'], 404);
         }
 
-        $course = $this->service->update($id, $request->all());
+        $subject = $this->service->update($id, $request->all());
 
-        return response()->json(['message' => 'Course updated'], 200);
+        return response()->json(['message' => 'Subject updated.'], 200);
     }
 
     /**
-     * Delete the course whose id is given
+     * Delete the subject whose id is given
      *
-     * @param int $id The id of course to be deleted
+     * @param int $id The id of subject to be deleted
      */
     public function destroy($id)
     {
-        $course = Course::find($id);
+        $subject = Subject::find($id);
 
-        if (!$course) {
-            return response()->json(['error' => 'Course not found'], 404);
+        if (!$subject) {
+            return response()->json(['error' => 'Subject not found!'], 404);
         }
 
         if ($this->service->delete($id)) {
-            return response()->json(['message' => 'Course has been deleted'], 200);
+            return response()->json(['message' => 'Subject has been deleted.'], 200);
         } else {
-            return response()->json(['error' => 'An unknown system error occurred'], 500);
+            return response()->json(['error' => 'An unknown system error occurred!'], 500);
         }
     }
 }

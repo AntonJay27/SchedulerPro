@@ -3,8 +3,7 @@
 namespace App\Services\GeneticAlgorithm;
 
 use App\Events\TimetablesGenerated;
-
-use App\Models\Course;
+use App\Models\Subject;
 use App\Models\Room as RoomModel;
 use App\Models\Timeslot as TimeslotModel;
 use App\Models\Timetable as TimetableModel;
@@ -75,48 +74,46 @@ class TimetableGA
             $timetable->addProfessor($professor->id, $unavailableSlotIds);
         }
 
-        // Set up courses
-        $results = DB::table('courses_classes')
+        // Set up subjects
+        $results = DB::table('subjects_classes')
             ->where('academic_period_id', $this->timetable->academic_period_id)
-            ->selectRaw('distinct course_id')
+            ->selectRaw('distinct subject_id')
             ->get();
 
-        $semesterCourseIds = [];
+        $semesterSubjectIds = [];
 
         foreach ($results as $result) {
-            $semesterCourseIds[] = $result->course_id;
+            $semesterSubjectIds[] = $result->subject_id;
         }
 
-        $courses = Course::whereIn('id', $semesterCourseIds)->get();
+        $subjects = Subject::whereIn('id', $semesterSubjectIds)->get();
 
-        foreach ($courses as $course) {
+        foreach ($subjects as $subject) {
             $professorIds  = [];
 
-            foreach ($course->professors as $professor) {
+            foreach ($subject->professors as $professor) {
                 $professorIds[] = $professor->id;
             }
 
-            $timetable->addModule($course->id, $professorIds);
+            $timetable->addModule($subject->id, $professorIds);
         }
 
         // Set up class groups
         $classes = CollegeClassModel::all();
 
         foreach ($classes as $class) {
-            $courseIds = [];
-            $courses = $class->courses()->wherePivot('academic_period_id', $this->timetable->academic_period_id)->get();
+            $subjectIds = [];
+            $subjects = $class->subjects()->wherePivot('academic_period_id', $this->timetable->academic_period_id)->get();
 
-            foreach ($courses as $course) {
-                $courseIds[] = $course->id;
+            foreach ($subjects as $subject) {
+                $subjectIds[] = $subject->id;
             }
 
-            $timetable->addGroup($class->id, $courseIds);
+            $timetable->addGroup($class->id, $subjectIds);
         }
-
 
         return $timetable;
     }
-
 
     /**
      * Get the id of the next timeslot after the one given
@@ -218,7 +215,7 @@ class TimetableGA
                     'day_id' => $dayId,
                     'timeslot_id' => $timeslotId,
                     'professor_id' => $professorId,
-                    'course_id' => $moduleId,
+                    'subject_id' => $moduleId,
                     'class_id' => $groupId,
                     'room_id' => $roomId
                 ]);

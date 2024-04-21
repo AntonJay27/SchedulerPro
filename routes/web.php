@@ -17,11 +17,22 @@ Route::get('/', function() {
 
 Route::get('/dashboard', 'DashboardController@index');
 
+Route::get('/', 'DashboardController@index');
+
+Route::post('generate-schedule', 'DashboardController@generateSchedule');
+Route::get('load-schedules', 'DashboardController@loadSchedules');
+Route::get('print-schedule/{id}', 'DashboardController@printSchedule');
+Route::get('delete-schedule', 'DashboardController@deleteSchedule');
+
+
 // Routes for rooms module
 Route::resource('rooms', 'RoomsController');
 
-// Routes for courses module
-Route::resource('courses', 'CoursesController');
+// Routes for timetables module
+Route::resource('timetables', 'TimetablesController');
+
+// Routes for subjects module
+Route::resource('subjects', 'SubjectsController');
 
 // Routes for timeslots module
 Route::resource('timeslots', 'TimeslotsController');

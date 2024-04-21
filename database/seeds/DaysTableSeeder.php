@@ -31,14 +31,6 @@ class DaysTableSeeder extends Seeder
             [
                 'name' => 'Friday',
                 'short_name' => 'Fri'
-            ],
-            [
-                'name' => 'Saturday',
-                'short_name' => 'Sat'
-            ],
-            [
-                'name' => 'Sunday',
-                'short_name' => 'Sun'
             ]
         ];
 

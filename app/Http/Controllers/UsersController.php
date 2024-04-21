@@ -8,11 +8,11 @@ use Hash;
 use Carbon\Carbon;
 use App\Services\Helpers;
 use Illuminate\Http\Request;
-
+use Illuminate\Validation\Rule;
 use App\Events\PasswordResetRequested;
-
 use App\Models\User;
 use App\Models\SecurityQuestion;
+use Illuminate\Validation\Rules\Password;
 
 class UsersController extends Controller
 {
@@ -33,28 +33,31 @@ class UsersController extends Controller
      *
      * @param Illuminate\Http\Request $request The HTTP request
      */
-    public function loginUser(Request $request)
-    {
-        $rules = [
-            'password' => 'required'
-        ];
 
-        $this->validate($request, $rules);
 
-        $user = User::first();
+public function loginUser(Request $request)
+{
+    $rules = [
+        'password' => 'required|min:8'
+    ];
 
-        if (!$user) {
-            return redirect()->back()->withErrors(['No user account has been set up yet']);
-        }
+    $this->validate($request, $rules);
 
-        if (!Hash::check($request->password, $user->password)) {
-            return redirect()->back()->withErrors(['Password is invalid']);
-        }
+    $user = User::first();
 
-        Auth::login($user);
-
-        return redirect('/');
+    if (!$user) {
+        return redirect()->back()->withErrors(['No user account has been set up yet.']);
     }
+
+    if (!Hash::check($request->password, $user->password)) {
+        return redirect()->back()->withErrors(['Password is invalid.']);
+    }
+
+    Auth::login($user);
+
+    return redirect('/dashboard');
+}
+
 
     /**
      * Show account activation page where new user can set up his
@@ -81,12 +84,15 @@ class UsersController extends Controller
         $user = Auth::user();
 
         if ($user->activated) {
-            return redirect()->back()->withError('Your account is already activated');
+            return redirect()->back()->withError('Your account is already activated.');
         }
 
         $rules = [
             'name' => 'required',
-            'password' => 'required|confirmed',
+            'password' => [
+                'required', 'string', 'confirmed',
+                Password::min(8)->letters()->numbers()->symbols()->mixedCase()
+            ],
             'security_question_id' => 'required|exists:security_questions,id',
             'security_question_answer' => 'required'
         ];
@@ -106,7 +112,7 @@ class UsersController extends Controller
             'activated' => true
         ]);
 
-        return redirect('/');
+        return redirect('/dashboard');
     }
 
     /**
@@ -210,6 +216,7 @@ class UsersController extends Controller
      *
      * @param Illuminate\Http\Request $request The HTTP request
      */
+
     public function updateAccount(Request $request)
     {
         $rules = [
@@ -218,10 +225,16 @@ class UsersController extends Controller
             'security_question_answer' => 'required'
         ];
 
-        if ($request->has('password') && $request->password) {
-            $rules['password'] = 'confirmed';
+        // New password complexity rules
+        if ($request->filled('password')) {
+            $rules['password'] = [
+                'required',
+                'confirmed',
+                'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&-])[A-Za-z\d@$!%*?&-]+$/'
+            ];
             $rules['old_password'] = 'required';
-        };
+        }
 
         $this->validate($request, $rules);
 
@@ -232,14 +245,18 @@ class UsersController extends Controller
             'security_question_answer' => $request->security_question_answer
         ];
 
-        if ($request->has('password') && $request->password) {
+        // If a new password is provided
+        if ($request->filled('password')) {
+            // Verify old password
             if (!Hash::check($request->old_password, $user->password)) {
-                return redirect()->back()->withErrors(['Current password is invalid']);
+                return redirect()->back()->withErrors(['old_password' => 'Current password is invalid']);
             }
 
+            // Hash the new password
             $data['password'] = bcrypt($request->password);
         }
 
+        // Update user data
         $user->update($data);
 
         return redirect()->back()->with('status', 'Your account has been updated');
