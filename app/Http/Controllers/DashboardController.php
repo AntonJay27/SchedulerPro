@@ -354,6 +354,7 @@ class DashboardController extends Controller
         $timetables = new Timetable();
         $arrData = $timetables->selectSchedule($scheduleId);
 
+        $header = $arrData[0]->name;
         $timeTable = json_decode($arrData[0]->schedules,true);
         $days = json_decode($arrData[0]->days,true);
 
@@ -372,25 +373,29 @@ class DashboardController extends Controller
         {
             PDF::AddPage();
 
+            PDF::SetFont ('helvetica', '', 12 , '', 'default', true );
+            PDF::Write(0, $header, '', false, 'C');
+            PDF::Ln();
+            PDF::SetFont ('helvetica', '', 16 , '', 'default', true );
             PDF::Write(0, str_replace('_',' ',$key1), '', false, 'C');
 
             PDF::Ln();
-
+            PDF::SetFont ('helvetica', '', 12 , '', 'default', true );
             if(count($days) <= 5)
             {
-                $htmlContent = "<br><br><div><small><b>TIME</b></small></div>";
-                PDF::writeHTMLCell(25, 25, 15, 25, $htmlContent, 1, 0, false, true, 'C');
+                $htmlContent = "<br><div><small><b>TIME</b></small></div>";
+                PDF::writeHTMLCell(25, 15, 15, 25, $htmlContent, 1, 0, false, true, 'C');
 
                 $dayCount = 40;
                 for ($i=0; $i < count($days); $i++) 
                 { 
                     $day = strtoupper($days[$i]);
-                    $htmlContent = "<br><br><div><small><b>$day</b></small></div>";
-                    PDF::writeHTMLCell(30, 25, $dayCount, 25, $htmlContent, 1, 0, false, true, 'C');
+                    $htmlContent = "<br><div><small><b>$day</b></small></div>";
+                    PDF::writeHTMLCell(30, 15, $dayCount, 25, $htmlContent, 1, 0, false, true, 'C');
                     $dayCount += 30;
                 }
 
-                $timeCount = 50;
+                $timeCount = 40;
                 foreach ($arrTimeSlots as $key2 => $value2) 
                 {
                     $time = $value2->time;
@@ -402,11 +407,11 @@ class DashboardController extends Controller
                 $dayCount = 40;
                 foreach ($timeTable[$key1] as $key2 => $value2) 
                 {
-                    $timeCount = 50;
+                    $timeCount = 40;
                     for ($i=0; $i < count($timeTable[$key1][$key2]); $i++) 
                     { 
-                        $subject = ($timeTable[$key1][$key2][$i][0] == "")? "-" : $timeTable[$key1][$key2][$i][0];
-                        $room = ($timeTable[$key1][$key2][$i][1] == "")? "-" : $timeTable[$key1][$key2][$i][1];
+                        $subject = ($timeTable[$key1][$key2][$i][0] == "")? "" : $timeTable[$key1][$key2][$i][0];
+                        $room = ($timeTable[$key1][$key2][$i][1] == "")? "" : $timeTable[$key1][$key2][$i][1];
                         $color = ($timeTable[$key1][$key2][$i][2] == "1")? "red" : "black";
                         $htmlContent = <<<EOD
                         <br><div style="color:$color"><small><b>$subject</b></small> <br> <small>$room</small></div>
@@ -419,19 +424,19 @@ class DashboardController extends Controller
             }
             else if(count($days) == 6)
             {
-                $htmlContent = "<br><br><div><small><b>TIME</b></small></div>";
-                PDF::writeHTMLCell(25, 25, 15, 25, $htmlContent, 1, 0, false, true, 'C');
+                $htmlContent = "<br><div><small><b>TIME</b></small></div>";
+                PDF::writeHTMLCell(25, 15, 15, 25, $htmlContent, 1, 0, false, true, 'C');
 
                 $dayCount = 40;
                 for ($i=0; $i < count($days); $i++) 
                 { 
                     $day = strtoupper($days[$i]);
-                    $htmlContent = "<br><br><div><small><b>$day</b></small></div>";
-                    PDF::writeHTMLCell(25, 25, $dayCount, 25, $htmlContent, 1, 0, false, true, 'C');
+                    $htmlContent = "<br><div><small><b>$day</b></small></div>";
+                    PDF::writeHTMLCell(25, 15, $dayCount, 25, $htmlContent, 1, 0, false, true, 'C');
                     $dayCount += 25;
                 }
 
-                $timeCount = 50;
+                $timeCount = 40;
                 foreach ($arrTimeSlots as $key2 => $value2) 
                 {
                     $time = $value2->time;
@@ -443,11 +448,11 @@ class DashboardController extends Controller
                 $dayCount = 40;
                 foreach ($timeTable[$key1] as $key2 => $value2) 
                 {
-                    $timeCount = 50;
+                    $timeCount = 40;
                     for ($i=0; $i < count($timeTable[$key1][$key2]); $i++) 
                     { 
-                        $subject = ($timeTable[$key1][$key2][$i][0] == "")? "-" : $timeTable[$key1][$key2][$i][0];
-                        $room = ($timeTable[$key1][$key2][$i][1] == "")? "-" : $timeTable[$key1][$key2][$i][1];
+                        $subject = ($timeTable[$key1][$key2][$i][0] == "")? "" : $timeTable[$key1][$key2][$i][0];
+                        $room = ($timeTable[$key1][$key2][$i][1] == "")? "" : $timeTable[$key1][$key2][$i][1];
                         $color = ($timeTable[$key1][$key2][$i][2] == "1")? "red" : "black";
                         $htmlContent = <<<EOD
                         <br><div style="color:$color"><small><b>$subject</b></small> <br> <small>$room</small></div>
