@@ -73,11 +73,7 @@ class Subject extends Model
             'a.class_id',
             'a.units',
             'b.subject_code',
-<<<<<<< HEAD
-            'b.name',
-=======
             'b.name as subject_name',
->>>>>>> 7ac4774264c7d4344dc4e07f1b58189b468f8726
             'b.lab',
             'c.name',
             'e.id as prof'
