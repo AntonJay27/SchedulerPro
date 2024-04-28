@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 class Professor extends Model
 {
@@ -40,5 +41,16 @@ class Professor extends Model
     public function unavailable_timeslots()
     {
         return $this->hasMany(UnavailableTimeslot::class, 'professor_id');
+    }
+
+    public function selectProfessor($profId)
+    {
+        $columns = [
+            'a.id',
+            'a.name as prof_name'
+        ];
+        $professor = DB::table('professors AS a')->select($columns)->where('a.id','=',$profId)->get()->toArray();
+
+        return $professor;
     }
 }
