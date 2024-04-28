@@ -69,21 +69,16 @@ class DashboardController extends Controller
     function getMaxUnit($arrData)
     {
         $maxUnit = 0;
-        $i = 0;
 
-        $arrKeys = [];
         foreach ($arrData as $key => $value) 
         {
-            if(!in_array($key, $arrKeys))
-            {
-                $i = 0;
+            for ($i=0; $i < count($value); $i++) 
+            { 
+                if($arrData[$key][$i]['units'] > $maxUnit)
+                {
+                    $maxUnit = $arrData[$key][$i]['units'];
+                }
             }
-            $arrKeys[] = $key;
-            if($arrData[$key][$i]['units'] > $maxUnit)
-            {
-                $maxUnit = $arrData[$key][$i]['units'];
-            }
-            $i++;
         }
         return $maxUnit;
     }
@@ -97,35 +92,35 @@ class DashboardController extends Controller
             $day = $days[$x];
 
             $randSchedIndex = array_rand($timeTable[$section][$day],1);
-            $time = $times[$randSchedIndex];
+            $time = $randSchedIndex;
 
             foreach ($timeTable as $key => $value) 
             {
                 if($key != $section)
                 {
-                    $arrRooms[] = $timeTable[$key][$day][$time-1][1];
-                    $arrProfs[] = $timeTable[$key][$day][$time-1][3];
+                    $arrRooms[] = $timeTable[$key][$day][$time][1];
+                    $arrProfs[] = $timeTable[$key][$day][$time][3];
                 }
             }
 
             foreach ($rooms as $key => $value) 
             {
-                if(!in_array($value['room'], $arrRooms) && $timeTable[$section][$day][$time-1][1] == "")
+                if(!in_array($value['room'], $arrRooms) && $timeTable[$section][$day][$time][1] == "")
                 {
-                    if(!in_array($subject['prof'], $arrProfs) && $timeTable[$section][$day][$time-1][3] == "")
+                    if(!in_array($subject['prof'], $arrProfs) && $timeTable[$section][$day][$time][3] == "")
                     {
                         if($subject['lab'] == 1)
                         {
                             if($value['lab'] == 1)
                             {
-                                return [$day, $time-1, $value['room']];
+                                return [$day, $time, $value['room']];
                             }
                         }   
                         else
                         {
                             if($value['lab'] == 0)
                             {
-                                return [$day, $time-1, $value['room']];
+                                return [$day, $time, $value['room']];
                             }
                         }
                     }               
@@ -245,47 +240,7 @@ class DashboardController extends Controller
         { 
             foreach ($arrData as $key => $value) 
             {
-                $arrDays = $days;
-                $section = $key;
-                for ($x=0; $x < count($value); $x++) 
-                { 
-                    if($value[$x]['units'] == $numUnits)
-                    {
-                        for ($y=0; $y < $value[$x]['units']; $y++) 
-                        { 
-                            if($value[$x]['lab'] == 0)
-                            {
-                                $result = $this->setScheduleOne($arrDays, $times, $timeTable, $rooms, $section, $value[$x]);
-
-                                if($result != null)
-                                {
-                                    $timeTable[$section][$result[0]][$result[1]][0] = $value[$x]['subject'];
-                                    $timeTable[$section][$result[0]][$result[1]][1] = $result[2];
-                                    $timeTable[$section][$result[0]][$result[1]][2] = '0';
-                                    $timeTable[$section][$result[0]][$result[1]][3] = $value[$x]['prof'];
-                                    $timeTable[$section][$result[0]][$result[1]][4] = $value[$x]['subject_name'];
-                                }
-
-                                $arrDays = array_reverse($arrDays);
-                                $arrDaysCount = count($arrDays);
-                                array_splice($arrDays, $arrDaysCount - 1);
-                                $arrDays = array_reverse($arrDays);
-
-                                if(count($arrDays) == 0)
-                                {
-                                    $arrDays = $days;
-                                }
-                            }
-                        }       
-                    }   
-                }
-            }
-        }
-
-        for ($numUnits=$maxUnit; $numUnits > 0; $numUnits--) 
-        { 
-            foreach ($arrData as $key => $value) 
-            {
+                shuffle($days);
                 $arrDays = $days;
                 $section = $key;
                 for ($x=0; $x < count($value); $x++) 
@@ -313,18 +268,17 @@ class DashboardController extends Controller
                                     {
                                         $timeTable[$section][$result[0]][$result[1]][0] = $value[$x]['subject'];
                                         $timeTable[$section][$result[0]][$result[1]][1] = $result[2];
-                                        $timeTable[$section][$result[0]][$result[1]][2] = '0';
+                                        $timeTable[$section][$result[0]][$result[1]][2] = '1';
                                         $timeTable[$section][$result[0]][$result[1]][3] = $value[$x]['prof'];
-                                        $timeTable[$section][$result[0]][$result[1]][4] = $value[$x]['subject_name'];
-                                    }
 
-                                    $arr[] = [$result[0], $result[1]];
-                                    $arrTempData[] = [$result[0], $result[1]];
+                                        $arr[] = [$result[0], $result[1]];
+                                        $arrTempData[] = [$result[0], $result[1]];
 
-                                    if($y == 0)
-                                    {
-                                        $day = $result[0];
-                                        $time = $result[1];
+                                        if($y == 0)
+                                        {
+                                            $day = $result[0];
+                                            $time = $result[1];
+                                        }
                                     }
                                 }
                             }
@@ -368,6 +322,47 @@ class DashboardController extends Controller
                         $arrDays = array_reverse($arrDays);     
                     }               
                 }                
+            }
+        }
+
+        for ($numUnits=$maxUnit; $numUnits > 0; $numUnits--) 
+        { 
+            foreach ($arrData as $key => $value) 
+            {
+                $arrDays = $days;
+                $section = $key;
+                for ($x=0; $x < count($value); $x++) 
+                { 
+                    if($value[$x]['units'] == $numUnits)
+                    {
+                        for ($y=0; $y < $value[$x]['units']; $y++) 
+                        { 
+                            if($value[$x]['lab'] == 0)
+                            {
+                                $result = $this->setScheduleOne($arrDays, $times, $timeTable, $rooms, $section, $value[$x]);
+
+                                if($result != null)
+                                {
+                                    $timeTable[$section][$result[0]][$result[1]][0] = $value[$x]['subject'];
+                                    $timeTable[$section][$result[0]][$result[1]][1] = $result[2];
+                                    $timeTable[$section][$result[0]][$result[1]][2] = '0';
+                                    $timeTable[$section][$result[0]][$result[1]][3] = $value[$x]['prof'];
+                                    $timeTable[$section][$result[0]][$result[1]][4] = $value[$x]['subject_name'];
+                                }
+
+                                $arrDays = array_reverse($arrDays);
+                                $arrDaysCount = count($arrDays);
+                                array_splice($arrDays, $arrDaysCount - 1);
+                                $arrDays = array_reverse($arrDays);
+
+                                if(count($arrDays) == 0)
+                                {
+                                    $arrDays = $days;
+                                }
+                            }
+                        }       
+                    }   
+                }
             }
         }
 
