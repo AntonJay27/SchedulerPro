@@ -271,6 +271,7 @@ class DashboardController extends Controller
                                         $timeTable[$section][$result[0]][$result[1]][1] = $result[2];
                                         $timeTable[$section][$result[0]][$result[1]][2] = '1';
                                         $timeTable[$section][$result[0]][$result[1]][3] = $value[$x]['prof'];
+                                        $timeTable[$section][$result[0]][$result[1]][4] = $value[$x]['subject_name'];
 
                                         $arr[] = [$result[0], $result[1]];
                                         $arrTempData[] = [$result[0], $result[1]];
