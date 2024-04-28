@@ -85,6 +85,7 @@
         },
         {
             "name": "brick/math",
+<<<<<<< HEAD
             "version": "0.12.1",
             "source": {
                 "type": "git",
@@ -104,6 +105,27 @@
                 "php-coveralls/php-coveralls": "^2.2",
                 "phpunit/phpunit": "^10.1",
                 "vimeo/psalm": "5.16.0"
+=======
+            "version": "0.11.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/brick/math.git",
+                "reference": "0ad82ce168c82ba30d1c01ec86116ab52f589478"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/brick/math/zipball/0ad82ce168c82ba30d1c01ec86116ab52f589478",
+                "reference": "0ad82ce168c82ba30d1c01ec86116ab52f589478",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "php-coveralls/php-coveralls": "^2.2",
+                "phpunit/phpunit": "^9.0",
+                "vimeo/psalm": "5.0.0"
+>>>>>>> 7ac4774264c7d4344dc4e07f1b58189b468f8726
             },
             "type": "library",
             "autoload": {
@@ -123,6 +145,7 @@
                 "arithmetic",
                 "bigdecimal",
                 "bignum",
+<<<<<<< HEAD
                 "bignumber",
                 "brick",
                 "decimal",
@@ -134,6 +157,14 @@
             "support": {
                 "issues": "https://github.com/brick/math/issues",
                 "source": "https://github.com/brick/math/tree/0.12.1"
+=======
+                "brick",
+                "math"
+            ],
+            "support": {
+                "issues": "https://github.com/brick/math/issues",
+                "source": "https://github.com/brick/math/tree/0.11.0"
+>>>>>>> 7ac4774264c7d4344dc4e07f1b58189b468f8726
             },
             "funding": [
                 {
@@ -141,7 +172,11 @@
                     "type": "github"
                 }
             ],
+<<<<<<< HEAD
             "time": "2023-11-29T23:19:16+00:00"
+=======
+            "time": "2023-01-15T23:15:59+00:00"
+>>>>>>> 7ac4774264c7d4344dc4e07f1b58189b468f8726
         },
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -2978,6 +3013,7 @@
         },
         {
             "name": "ramsey/uuid",
+<<<<<<< HEAD
             "version": "4.7.6",
             "source": {
                 "type": "git",
@@ -2992,6 +3028,22 @@
             },
             "require": {
                 "brick/math": "^0.8.8 || ^0.9 || ^0.10 || ^0.11 || ^0.12",
+=======
+            "version": "4.7.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ramsey/uuid.git",
+                "reference": "5f0df49ae5ad6efb7afa69e6bfab4e5b1e080d8e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ramsey/uuid/zipball/5f0df49ae5ad6efb7afa69e6bfab4e5b1e080d8e",
+                "reference": "5f0df49ae5ad6efb7afa69e6bfab4e5b1e080d8e",
+                "shasum": ""
+            },
+            "require": {
+                "brick/math": "^0.8.8 || ^0.9 || ^0.10 || ^0.11",
+>>>>>>> 7ac4774264c7d4344dc4e07f1b58189b468f8726
                 "ext-json": "*",
                 "php": "^8.0",
                 "ramsey/collection": "^1.2 || ^2.0"
@@ -3054,7 +3106,11 @@
             ],
             "support": {
                 "issues": "https://github.com/ramsey/uuid/issues",
+<<<<<<< HEAD
                 "source": "https://github.com/ramsey/uuid/tree/4.7.6"
+=======
+                "source": "https://github.com/ramsey/uuid/tree/4.7.5"
+>>>>>>> 7ac4774264c7d4344dc4e07f1b58189b468f8726
             },
             "funding": [
                 {
@@ -3066,7 +3122,11 @@
                     "type": "tidelift"
                 }
             ],
+<<<<<<< HEAD
             "time": "2024-04-27T21:32:50+00:00"
+=======
+            "time": "2023-11-08T05:53:05+00:00"
+>>>>>>> 7ac4774264c7d4344dc4e07f1b58189b468f8726
         },
         {
             "name": "sabberworm/php-css-parser",
