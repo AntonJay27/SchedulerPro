@@ -73,7 +73,7 @@ class Subject extends Model
             'a.class_id',
             'a.units',
             'b.subject_code',
-            'b.name',
+            'b.name as subject_name',
             'b.lab',
             'c.name',
             'e.id as prof'
