@@ -240,14 +240,15 @@ class DashboardController extends Controller
         { 
             foreach ($arrData as $key => $value) 
             {
-                shuffle($days);
                 $arrDays = $days;
+                shuffle($arrDays);
                 $section = $key;
                 for ($x=0; $x < count($value); $x++) 
                 { 
                     if(count($arrDays) == 0)
                     {
                         $arrDays = $days;
+                        shuffle($arrDays);
                     }
                     if($value[$x]['units'] == $numUnits)
                     {
