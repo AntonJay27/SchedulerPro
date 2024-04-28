@@ -11,7 +11,7 @@ use App\Models\AcademicPeriod;
 use App\Models\Timeslot;
 use App\Models\Room;
 use App\Models\Subject;
-// use App\Models\Timetable;
+use App\Models\Professor;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -56,7 +56,7 @@ class DashboardController extends Controller
                 $slots = [];
                 for ($y=0; $y < count($times); $y++) 
                 { 
-                    $slots[] = ["","","",""];
+                    $slots[] = ["","","","",""];
                 }
                 $arrTemp[$days[$x]] = $slots;
             }
@@ -88,10 +88,56 @@ class DashboardController extends Controller
         return $maxUnit;
     }
 
-    function setSchedule($days, $times, $timeTable, $rooms, $section, $subject)
+    function setScheduleOne($days, $times, $timeTable, $rooms, $section, $subject)
     {
         $arrRooms = [];
-        // $arrProfs = [];
+        $arrProfs = [];
+        for ($x=0; $x < count($days); $x++) 
+        {
+            $day = $days[$x];
+
+            $randSchedIndex = array_rand($timeTable[$section][$day],1);
+            $time = $times[$randSchedIndex];
+
+            foreach ($timeTable as $key => $value) 
+            {
+                if($key != $section)
+                {
+                    $arrRooms[] = $timeTable[$key][$day][$time-1][1];
+                    $arrProfs[] = $timeTable[$key][$day][$time-1][3];
+                }
+            }
+
+            foreach ($rooms as $key => $value) 
+            {
+                if(!in_array($value['room'], $arrRooms) && $timeTable[$section][$day][$time-1][1] == "")
+                {
+                    if(!in_array($subject['prof'], $arrProfs) && $timeTable[$section][$day][$time-1][3] == "")
+                    {
+                        if($subject['lab'] == 1)
+                        {
+                            if($value['lab'] == 1)
+                            {
+                                return [$day, $time-1, $value['room']];
+                            }
+                        }   
+                        else
+                        {
+                            if($value['lab'] == 0)
+                            {
+                                return [$day, $time-1, $value['room']];
+                            }
+                        }
+                    }               
+                }       
+            }
+        }
+    }
+
+    function setScheduleTwo($days, $times, $timeTable, $rooms, $section, $subject)
+    {
+        $arrRooms = [];
+        $arrProfs = [];
         for ($x=0; $x < count($days); $x++) 
         { 
             for ($y=0; $y < count($times); $y++) 
@@ -100,13 +146,13 @@ class DashboardController extends Controller
                 $time = $times[$y];
 
                 $arrRooms = [];
-                // $arrProfs = [];
+                $arrProfs = [];
                 foreach ($timeTable as $key => $value) 
                 {
                     if($key != $section)
                     {
                         $arrRooms[] = $timeTable[$key][$day][$time-1][1];
-                        // $arrProfs[] = $timeTable[$key][$day][$time-1][3];
+                        $arrProfs[] = $timeTable[$key][$day][$time-1][3];
                     }
                 }
 
@@ -114,8 +160,8 @@ class DashboardController extends Controller
                 {
                     if(!in_array($value['room'], $arrRooms) && $timeTable[$section][$day][$time-1][1] == "")
                     {
-                        // if(!in_array($subject['prof'], $arrProfs) && $timeTable[$section][$day][$time-1][3] == "")
-                        // {
+                        if(!in_array($subject['prof'], $arrProfs) && $timeTable[$section][$day][$time-1][3] == "")
+                        {
                             if($subject['lab'] == 1)
                             {
                                 if($value['lab'] == 1)
@@ -130,13 +176,12 @@ class DashboardController extends Controller
                                     return [$day, $time-1, $value['room']];
                                 }
                             }
-
-
-                        // }               
+                        }               
                     }       
                 }
             }
         }
+
     }
 
     public function generateSchedule(Request $request)
@@ -181,10 +226,11 @@ class DashboardController extends Controller
                 if($arrClasses[$i] == $value['name'])
                 {
                     $arrData[$arrClasses[$i]][] = [
-                        'subject'   => $value['subject_code'],
-                        'units'     => $value['units'],
-                        'lab'       => $value['lab'],
-                        'prof'      => $value['prof']
+                        'subject'       => $value['subject_code'],
+                        'subject_name'  => $value['subject_name'],
+                        'units'         => $value['units'],
+                        'lab'           => $value['lab'],
+                        'prof'          => $value['prof']
                     ]; 
                 }
             }
@@ -209,12 +255,16 @@ class DashboardController extends Controller
                         { 
                             if($value[$x]['lab'] == 0)
                             {
-                                $result = $this->setSchedule($arrDays, $times, $timeTable, $rooms, $section, $value[$x]);
+                                $result = $this->setScheduleOne($arrDays, $times, $timeTable, $rooms, $section, $value[$x]);
 
-                                $timeTable[$section][$result[0]][$result[1]][0] = $value[$x]['subject'];
-                                $timeTable[$section][$result[0]][$result[1]][1] = $result[2];
-                                $timeTable[$section][$result[0]][$result[1]][2] = '0';
-                                $timeTable[$section][$result[0]][$result[1]][3] = $value[$x]['prof'];
+                                if($result != null)
+                                {
+                                    $timeTable[$section][$result[0]][$result[1]][0] = $value[$x]['subject'];
+                                    $timeTable[$section][$result[0]][$result[1]][1] = $result[2];
+                                    $timeTable[$section][$result[0]][$result[1]][2] = '0';
+                                    $timeTable[$section][$result[0]][$result[1]][3] = $value[$x]['prof'];
+                                    $timeTable[$section][$result[0]][$result[1]][4] = $value[$x]['subject_name'];
+                                }
 
                                 $arrDays = array_reverse($arrDays);
                                 $arrDaysCount = count($arrDays);
@@ -232,14 +282,18 @@ class DashboardController extends Controller
             }
         }
 
-        $arrDays = $days;
         for ($numUnits=$maxUnit; $numUnits > 0; $numUnits--) 
         { 
             foreach ($arrData as $key => $value) 
             {
+                $arrDays = $days;
                 $section = $key;
                 for ($x=0; $x < count($value); $x++) 
                 { 
+                    if(count($arrDays) == 0)
+                    {
+                        $arrDays = $days;
+                    }
                     if($value[$x]['units'] == $numUnits)
                     {
                         $tf = true;
@@ -253,17 +307,16 @@ class DashboardController extends Controller
                             { 
                                 if($value[$x]['lab'] == 1)
                                 {
-                                    $result = $this->setSchedule($days, $times, $timeTable, $rooms, $section, $value[$x]);
+                                    $result = $this->setScheduleTwo($arrDays, $times, $timeTable, $rooms, $section, $value[$x]);
 
-                                    if($result == null)
+                                    if($result != null)
                                     {
-                                        return response()->json(['Error']);
+                                        $timeTable[$section][$result[0]][$result[1]][0] = $value[$x]['subject'];
+                                        $timeTable[$section][$result[0]][$result[1]][1] = $result[2];
+                                        $timeTable[$section][$result[0]][$result[1]][2] = '0';
+                                        $timeTable[$section][$result[0]][$result[1]][3] = $value[$x]['prof'];
+                                        $timeTable[$section][$result[0]][$result[1]][4] = $value[$x]['subject_name'];
                                     }
-
-                                    $timeTable[$section][$result[0]][$result[1]][0] = $value[$x]['subject'];
-                                    $timeTable[$section][$result[0]][$result[1]][1] = $result[2];
-                                    $timeTable[$section][$result[0]][$result[1]][2] = '1';
-                                    $timeTable[$section][$result[0]][$result[1]][3] = $value[$x]['prof'];
 
                                     $arr[] = [$result[0], $result[1]];
                                     $arrTempData[] = [$result[0], $result[1]];
@@ -306,19 +359,15 @@ class DashboardController extends Controller
                             $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][1] = ""; 
                             $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][2] = ""; 
                             $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][3] = ""; 
-                        }   
+                            $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][4] = ""; 
+                        }       
 
                         $arrDays = array_reverse($arrDays);
                         $arrDaysCount = count($arrDays);
                         array_splice($arrDays, $arrDaysCount - 1);
-                        $arrDays = array_reverse($arrDays);
-
-                        if(count($arrDays) == 0)
-                        {
-                            $arrDays = $days;
-                        }            
+                        $arrDays = array_reverse($arrDays);     
                     }               
-                }
+                }                
             }
         }
 
@@ -349,6 +398,20 @@ class DashboardController extends Controller
         return response()->json($arrSchedules);      
     }
 
+    public function loadProfName($profId)
+    {
+        if($profId != "")
+        {
+            $professors = new Professor();
+            $arrData = $professors->selectProfessor($profId);
+            return $arrData[0]->prof_name;
+        }
+        else
+        {
+            return "";
+        }
+    }
+
     public function printSchedule($scheduleId)
     {
         $timetables = new Timetable();
@@ -367,11 +430,22 @@ class DashboardController extends Controller
             $times[] = $a;
         }
 
+        foreach ($timeTable as $key => $value) 
+        {
+            for ($x=0; $x < count($days); $x++) 
+            { 
+                for ($y=0; $y < count($times); $y++) 
+                { 
+                    $timeTable[$key][$days[$x]][$y][3] = $this->loadProfName($timeTable[$key][$days[$x]][$y][3]);
+                }
+            }
+        }
+
         PDF::SetTitle($arrData[0]->name);
 
         foreach ($timeTable as $key1 => $value1) 
         {
-            PDF::AddPage();
+            PDF::AddPage('L', 'A4');
 
             PDF::SetFont ('helvetica', '', 12 , '', 'default', true );
             PDF::Write(0, $header, '', false, 'C');
@@ -384,90 +458,120 @@ class DashboardController extends Controller
             if(count($days) <= 5)
             {
                 $htmlContent = "<br><div><small><b>TIME</b></small></div>";
-                PDF::writeHTMLCell(25, 15, 15, 25, $htmlContent, 1, 0, false, true, 'C');
+                PDF::writeHTMLCell(25, 10, 15, 25, $htmlContent, 1, 0, false, true, 'C');
 
                 $dayCount = 40;
                 for ($i=0; $i < count($days); $i++) 
                 { 
                     $day = strtoupper($days[$i]);
                     $htmlContent = "<br><div><small><b>$day</b></small></div>";
-                    PDF::writeHTMLCell(30, 15, $dayCount, 25, $htmlContent, 1, 0, false, true, 'C');
-                    $dayCount += 30;
+                    PDF::writeHTMLCell(48, 10, $dayCount, 25, $htmlContent, 1, 0, false, true, 'C');
+                    $dayCount += 48;
                 }
 
-                $timeCount = 40;
+                $timeCount = 36;
                 foreach ($arrTimeSlots as $key2 => $value2) 
                 {
                     $time = $value2->time;
-                    $htmlContent = "<br><br><div><small><b>$time</b></small></div>";
-                    PDF::writeHTMLCell(25, 25, 15, $timeCount, $htmlContent, 1, 0, false, true, 'C');
-                    $timeCount += 25;
+                    $htmlContent = "<br><div><small><b>$time</b></small></div>";
+                    PDF::writeHTMLCell(25, 17, 15, $timeCount, $htmlContent, 1, 0, false, true, 'C');
+                    $timeCount += 17;
                 }
                 
                 $dayCount = 40;
                 foreach ($timeTable[$key1] as $key2 => $value2) 
                 {
-                    $timeCount = 40;
+                    $timeCount = 36;
                     for ($i=0; $i < count($timeTable[$key1][$key2]); $i++) 
                     { 
-                        $subject = ($timeTable[$key1][$key2][$i][0] == "")? "" : $timeTable[$key1][$key2][$i][0];
+                        $subjectCode = ($timeTable[$key1][$key2][$i][0] == "")? "" : "({$timeTable[$key1][$key2][$i][0]})";
                         $room = ($timeTable[$key1][$key2][$i][1] == "")? "" : $timeTable[$key1][$key2][$i][1];
                         $color = ($timeTable[$key1][$key2][$i][2] == "1")? "red" : "black";
+                        $prof = ($timeTable[$key1][$key2][$i][3] == "")? "" : $timeTable[$key1][$key2][$i][3];
+                        $subjectName = ($timeTable[$key1][$key2][$i][4] == "")? "" : $timeTable[$key1][$key2][$i][4];
                         $htmlContent = <<<EOD
-                        <br><div style="color:$color"><small><b>$subject</b></small> <br> <small>$room</small></div>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" style="font-size:1px;"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="font-size:10px;"><small><i><b>$subjectName</b></i></small> <small><i>$subjectCode</i></small></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size:8px;"><small><i>$room</i></small></td>
+                                    <td style="font-size:8px;"><small><i>$prof</i></small></td>
+                                </tr>
+                            </tbody>
+                        </table>
                         EOD;
-                        PDF::writeHTMLCell(30, 25, $dayCount, $timeCount, $htmlContent, 1, 0, false, true, 'C');
-                        $timeCount += 25;
+                        PDF::writeHTMLCell(48, 17, $dayCount, $timeCount, $htmlContent, 1, 0, false, false, 'C');
+                        $timeCount += 17;
                     }
-                    $dayCount += 30;
+                    $dayCount += 48;
                 }
             }
             else if(count($days) == 6)
             {
                 $htmlContent = "<br><div><small><b>TIME</b></small></div>";
-                PDF::writeHTMLCell(25, 15, 15, 25, $htmlContent, 1, 0, false, true, 'C');
+                PDF::writeHTMLCell(25, 10, 15, 25, $htmlContent, 1, 0, false, true, 'C');
 
                 $dayCount = 40;
                 for ($i=0; $i < count($days); $i++) 
                 { 
                     $day = strtoupper($days[$i]);
                     $htmlContent = "<br><div><small><b>$day</b></small></div>";
-                    PDF::writeHTMLCell(25, 15, $dayCount, 25, $htmlContent, 1, 0, false, true, 'C');
-                    $dayCount += 25;
+                    PDF::writeHTMLCell(40, 10, $dayCount, 25, $htmlContent, 1, 0, false, true, 'C');
+                    $dayCount += 40;
                 }
 
-                $timeCount = 40;
+                $timeCount = 36;
                 foreach ($arrTimeSlots as $key2 => $value2) 
                 {
                     $time = $value2->time;
-                    $htmlContent = "<br><br><div><small><b>$time</b></small></div>";
-                    PDF::writeHTMLCell(25, 25, 15, $timeCount, $htmlContent, 1, 0, false, true, 'C');
-                    $timeCount += 25;
+                    $htmlContent = "<br><div><small><b>$time</b></small></div>";
+                    PDF::writeHTMLCell(25, 17, 15, $timeCount, $htmlContent, 1, 0, false, true, 'C');
+                    $timeCount += 17;
                 }
                 
                 $dayCount = 40;
                 foreach ($timeTable[$key1] as $key2 => $value2) 
                 {
-                    $timeCount = 40;
+                    $timeCount = 36;
                     for ($i=0; $i < count($timeTable[$key1][$key2]); $i++) 
                     { 
-                        $subject = ($timeTable[$key1][$key2][$i][0] == "")? "" : $timeTable[$key1][$key2][$i][0];
+                        $subjectCode = ($timeTable[$key1][$key2][$i][0] == "")? "" : "({$timeTable[$key1][$key2][$i][0]})";
                         $room = ($timeTable[$key1][$key2][$i][1] == "")? "" : $timeTable[$key1][$key2][$i][1];
                         $color = ($timeTable[$key1][$key2][$i][2] == "1")? "red" : "black";
+                        $prof = ($timeTable[$key1][$key2][$i][3] == "")? "" : $timeTable[$key1][$key2][$i][3];
+                        $subjectName = ($timeTable[$key1][$key2][$i][4] == "")? "" : $timeTable[$key1][$key2][$i][4];
                         $htmlContent = <<<EOD
-                        <br><div style="color:$color"><small><b>$subject</b></small> <br> <small>$room</small></div>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" style="font-size:1px;"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="font-size:10px;"><small><i><b>$subjectName</b></i></small> <small><i>$subjectCode</i></small></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size:8px;"><small><i>$room</i></small></td>
+                                    <td style="font-size:8px;"><small><i>$prof</i></small></td>
+                                </tr>
+                            </tbody>
+                        </table>
                         EOD;
-                        PDF::writeHTMLCell(25, 25, $dayCount, $timeCount, $htmlContent, 1, 0, false, true, 'C');
-                        $timeCount += 25;
+                        PDF::writeHTMLCell(40, 17, $dayCount, $timeCount, $htmlContent, 1, 0, false, false, 'C');
+                        $timeCount += 17;
                     }
-                    $dayCount += 25;
+                    $dayCount += 40;
                 }
             }
 
             
         }
 
-        PDF::Output('hello_world.pdf');
+        PDF::Output(str_replace(" ","-",$header).'.pdf');
     }
 
     public function deleteSchedule(Request $request)
