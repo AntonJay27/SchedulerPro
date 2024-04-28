@@ -103,6 +103,7 @@ class DashboardController extends Controller
                 }
             }
 
+            shuffle($rooms);
             foreach ($rooms as $key => $value) 
             {
                 if(!in_array($value['room'], $arrRooms) && $timeTable[$section][$day][$time][1] == "")
