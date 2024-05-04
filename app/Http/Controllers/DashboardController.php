@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\DashboardService;
+use App\Services\TimeTableService;
 use App\Models\Day;
 use App\Models\Timetable;
 use App\Models\AcademicPeriod;
@@ -103,30 +104,35 @@ class DashboardController extends Controller
                 }
             }
 
-            shuffle($rooms);
-            foreach ($rooms as $key => $value) 
-            {
-                if(!in_array($value['room'], $arrRooms) && $timeTable[$section][$day][$time][1] == "")
+            // $strSlot = "$x-$time";
+            // $arrUnavailableSlot = $this->loadUnavailableSlot($subject['prof']);
+            // if(!in_array($strSlot, $arrUnavailableSlot))
+            // {
+                shuffle($rooms);
+                foreach ($rooms as $key => $value) 
                 {
-                    if(!in_array($subject['prof'], $arrProfs) && $timeTable[$section][$day][$time][3] == "")
+                    if(!in_array($value['room'], $arrRooms) && $timeTable[$section][$day][$time][1] == "")
                     {
-                        if($subject['lab'] == 1)
+                        if(!in_array($subject['prof'], $arrProfs) && $timeTable[$section][$day][$time][3] == "")
                         {
-                            if($value['lab'] == 1)
+                            if($subject['lab'] == 1)
                             {
-                                return [$day, $time, $value['room']];
-                            }
-                        }   
-                        else
-                        {
-                            if($value['lab'] == 0)
+                                if($value['lab'] == 1)
+                                {
+                                    return [$day, $time, $value['room']];
+                                }
+                            }   
+                            else
                             {
-                                return [$day, $time, $value['room']];
+                                if($value['lab'] == 0)
+                                {
+                                    return [$day, $time, $value['room']];
+                                }
                             }
-                        }
-                    }               
-                }       
-            }
+                        }               
+                    }       
+                }
+            // }
         }
     }
 
@@ -152,239 +158,291 @@ class DashboardController extends Controller
                     }
                 }
 
-                foreach ($rooms as $key => $value) 
+                $strSlot = "$x-$y";
+                $arrUnavailableSlot = $this->loadUnavailableSlot($subject['prof']);
+                if(!in_array($strSlot, $arrUnavailableSlot))
                 {
-                    if(!in_array($value['room'], $arrRooms) && $timeTable[$section][$day][$time-1][1] == "")
+                    foreach ($rooms as $key => $value) 
                     {
-                        if(!in_array($subject['prof'], $arrProfs) && $timeTable[$section][$day][$time-1][3] == "")
+                        if(!in_array($value['room'], $arrRooms) && $timeTable[$section][$day][$time-1][1] == "")
                         {
-                            if($subject['lab'] == 1)
+                            if(!in_array($subject['prof'], $arrProfs) && $timeTable[$section][$day][$time-1][3] == "")
                             {
-                                if($value['lab'] == 1)
+                                if($subject['lab'] == 1)
                                 {
-                                    return [$day, $time-1, $value['room']];
-                                }
-                            }   
-                            else
-                            {
-                                if($value['lab'] == 0)
+                                    if($value['lab'] == 1)
+                                    {
+                                        return [$day, $time-1, $value['room']];
+                                    }
+                                }   
+                                else
                                 {
-                                    return [$day, $time-1, $value['room']];
+                                    if($value['lab'] == 0)
+                                    {
+                                        return [$day, $time-1, $value['room']];
+                                    }
                                 }
-                            }
-                        }               
-                    }       
+                            }               
+                        }       
+                    }
                 }
+                
             }
         }
 
     }
 
+
+    function loadUnavailableSlot($profId)
+    {
+        $timeslots = new Timeslot();
+        $arrResult = $timeslots->loadUnavailableSlot($profId);
+        $arrData = [];
+        foreach ($arrResult as $key => $value) 
+        {
+            $day = (int)$value->day_id - 1;
+            $time = (int)$value->timeslot_id - 1;
+            $arrData[] = "{$day}-{$time}";
+        }
+        return $arrData;
+    }
+
     public function generateSchedule(Request $request)
     {
+        $service = new TimeTableService();
+
+        $result = $service->checkCreationConditions();
+
         $days = json_decode($request['arrDays'],true);
-        // $days = ["mon","tue","wed","thu","fri","sat"];
 
-        $timeslots = new Timeslot();
-        $arrTimeSlots = $timeslots->loadTimeslots();
-        $arrTimeSlotsCount = count($arrTimeSlots);
-        $times = [];
-        for ($a=1; $a <= ($arrTimeSlotsCount); $a++) 
-        { 
-            $times[] = $a;
-        } 
-
-        $roomss = new Room();
-        $arrRooms = $roomss->loadRooms();
-
-        $rooms = json_decode(json_encode($arrRooms),true);
-
-        $academicPeriod = 1;
-        $subjects = new Subject();
-        $arrSubjects = $subjects->loadSubjects($academicPeriod); 
-
-        $arrClasses = [];
-        foreach (json_decode(json_encode($arrSubjects),true) as $key => $value) 
+        if(count($result) > 0 || count($days) == 0 || $request['txt_timeTableHeader'] == "" || $request['slc_academicPeriod'] == 'null')
         {
-            $value['name'] = str_replace(' ', '_', $value['name']);
-            if(!in_array($value['name'], $arrClasses))
+            if(count($days) == 0)
             {
-                $arrClasses[] = $value['name'];
+                $result[] = "Please select days!";
             }
-        }
 
-        $arrData = [];
-        for ($i=0; $i < count($arrClasses); $i++) 
-        { 
+            if($request['txt_timeTableHeader'] == "")
+            {
+                $result[] = "Timetable header is required!";
+            }
+
+            if($request['slc_academicPeriod'] == 'null')
+            {
+                $result[] = "Academic Period is required!";
+            }
+            return response()->json($result, 422);
+            exit();
+        }
+        else
+        {
+
+            $timeslots = new Timeslot();
+            $arrTimeSlots = $timeslots->loadTimeslots();
+            $arrTimeSlotsCount = count($arrTimeSlots);
+            $times = [];
+            for ($a=1; $a <= ($arrTimeSlotsCount); $a++) 
+            { 
+                $times[] = $a;
+            } 
+
+            $roomss = new Room();
+            $arrRooms = $roomss->loadRooms();
+
+            $rooms = json_decode(json_encode($arrRooms),true);
+
+            $academicPeriod = 1;
+            $subjects = new Subject();
+            $arrSubjects = $subjects->loadSubjects($academicPeriod); 
+
+            $arrClasses = [];
             foreach (json_decode(json_encode($arrSubjects),true) as $key => $value) 
             {
                 $value['name'] = str_replace(' ', '_', $value['name']);
-                if($arrClasses[$i] == $value['name'])
+                if(!in_array($value['name'], $arrClasses))
                 {
-                    $arrData[$arrClasses[$i]][] = [
-                        'subject'       => $value['subject_code'],
-                        'subject_name'  => $value['subject_name'],
-                        'units'         => $value['units'],
-                        'lab'           => $value['lab'],
-                        'prof'          => $value['prof']
-                    ]; 
+                    $arrClasses[] = $value['name'];
                 }
             }
-        }
 
-
-        $timeTable = $this->createEmptyFields($days, $times, $arrData);
-
-        $maxUnit = $this->getMaxUnit($arrData);
-
-        for ($numUnits=$maxUnit; $numUnits > 0; $numUnits--) 
-        { 
-            foreach ($arrData as $key => $value) 
-            {
-                $arrDays = $days;
-                shuffle($arrDays);
-                $section = $key;
-                for ($x=0; $x < count($value); $x++) 
-                { 
-                    if(count($arrDays) == 0)
+            $arrData = [];
+            for ($i=0; $i < count($arrClasses); $i++) 
+            { 
+                foreach (json_decode(json_encode($arrSubjects),true) as $key => $value) 
+                {
+                    $value['name'] = str_replace(' ', '_', $value['name']);
+                    if($arrClasses[$i] == $value['name'])
                     {
-                        $arrDays = $days;
-                        shuffle($arrDays);
+                        $arrData[$arrClasses[$i]][] = [
+                            'subject'       => $value['subject_code'],
+                            'subject_name'  => $value['subject_name'],
+                            'units'         => $value['units'],
+                            'lab'           => $value['lab'],
+                            'prof'          => $value['prof']
+                        ]; 
                     }
-                    if($value[$x]['units'] == $numUnits)
-                    {
-                        $tf = true;
-                        $arrTempData = [];
-                        while ($tf == true) 
+                }
+            }
+
+
+            $timeTable = $this->createEmptyFields($days, $times, $arrData);
+
+            $maxUnit = $this->getMaxUnit($arrData);
+
+            for ($numUnits=$maxUnit; $numUnits > 0; $numUnits--) 
+            { 
+                foreach ($arrData as $key => $value) 
+                {
+                    $arrDays = $days;
+                    shuffle($arrDays);
+                    $section = $key;
+                    for ($x=0; $x < count($value); $x++) 
+                    { 
+                        if(count($arrDays) == 0)
                         {
-                            $day = "";
-                            $time = 0;
-                            $arr = [];
+                            $arrDays = $days;
+                            shuffle($arrDays);
+                        }
+                        if($value[$x]['units'] == $numUnits)
+                        {
+                            $tf = true;
+                            $arrTempData = [];
+                            while ($tf == true) 
+                            {
+                                $day = "";
+                                $time = 0;
+                                $arr = [];
+                                for ($y=0; $y < $value[$x]['units']; $y++) 
+                                { 
+                                    if($value[$x]['lab'] == 1)
+                                    {
+                                        $result = $this->setScheduleTwo($arrDays, $times, $timeTable, $rooms, $section, $value[$x]);
+
+                                        if($result != null)
+                                        {
+                                            $timeTable[$section][$result[0]][$result[1]][0] = $value[$x]['subject'];
+                                            $timeTable[$section][$result[0]][$result[1]][1] = $result[2];
+                                            $timeTable[$section][$result[0]][$result[1]][2] = '1';
+                                            $timeTable[$section][$result[0]][$result[1]][3] = $value[$x]['prof'];
+                                            $timeTable[$section][$result[0]][$result[1]][4] = $value[$x]['subject_name'];
+
+                                            $arr[] = [$result[0], $result[1]];
+                                            $arrTempData[] = [$result[0], $result[1]];
+
+                                            if($y == 0)
+                                            {
+                                                $day = $result[0];
+                                                $time = $result[1];
+                                            }
+                                        }
+                                    }
+                                }
+
+                                $arrChecking = [];
+                                for ($i=0; $i < count($arr); $i++) 
+                                { 
+                                    if($arr[$i][0] == $day && $arr[$i][1] == $time)
+                                    {
+                                        $arrChecking[] = 1;
+                                    }
+                                    else
+                                    {
+                                        $arrChecking[] = 0;
+                                    }
+                                    $time++;
+                                }
+
+                                if(!in_array(0, $arrChecking) || count($arrTempData) == 0)
+                                {
+                                    $tf = false;
+                                }
+                            }
+
+                            $arrLen = count($arrTempData);
+                            $index = $arrLen - $numUnits;
+                            array_splice($arrTempData, $index);
+
+                            for ($a=0; $a < count($arrTempData); $a++) 
+                            { 
+                                $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][0] = ""; 
+                                $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][1] = ""; 
+                                $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][2] = ""; 
+                                $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][3] = ""; 
+                                $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][4] = ""; 
+                            }       
+
+                            $arrDays = array_reverse($arrDays);
+                            $arrDaysCount = count($arrDays);
+                            array_splice($arrDays, $arrDaysCount - 1);
+                            $arrDays = array_reverse($arrDays);     
+                        }               
+                    }                
+                }
+            }
+
+            for ($numUnits=$maxUnit; $numUnits > 0; $numUnits--) 
+            { 
+                foreach ($arrData as $key => $value) 
+                {
+                    $arrDays = $days;
+                    $section = $key;
+                    for ($x=0; $x < count($value); $x++) 
+                    { 
+                        if($value[$x]['units'] == $numUnits)
+                        {
                             for ($y=0; $y < $value[$x]['units']; $y++) 
                             { 
-                                if($value[$x]['lab'] == 1)
+                                if($value[$x]['lab'] == 0)
                                 {
-                                    $result = $this->setScheduleTwo($arrDays, $times, $timeTable, $rooms, $section, $value[$x]);
+                                    $result = $this->setScheduleOne($arrDays, $times, $timeTable, $rooms, $section, $value[$x]);
 
                                     if($result != null)
                                     {
                                         $timeTable[$section][$result[0]][$result[1]][0] = $value[$x]['subject'];
                                         $timeTable[$section][$result[0]][$result[1]][1] = $result[2];
-                                        $timeTable[$section][$result[0]][$result[1]][2] = '1';
+                                        $timeTable[$section][$result[0]][$result[1]][2] = '0';
                                         $timeTable[$section][$result[0]][$result[1]][3] = $value[$x]['prof'];
                                         $timeTable[$section][$result[0]][$result[1]][4] = $value[$x]['subject_name'];
+                                    }
 
-                                        $arr[] = [$result[0], $result[1]];
-                                        $arrTempData[] = [$result[0], $result[1]];
+                                    $arrDays = array_reverse($arrDays);
+                                    $arrDaysCount = count($arrDays);
+                                    array_splice($arrDays, $arrDaysCount - 1);
+                                    $arrDays = array_reverse($arrDays);
 
-                                        if($y == 0)
-                                        {
-                                            $day = $result[0];
-                                            $time = $result[1];
-                                        }
+                                    if(count($arrDays) == 0)
+                                    {
+                                        $arrDays = $days;
                                     }
                                 }
-                            }
-
-                            $arrChecking = [];
-                            for ($i=0; $i < count($arr); $i++) 
-                            { 
-                                if($arr[$i][0] == $day && $arr[$i][1] == $time)
-                                {
-                                    $arrChecking[] = 1;
-                                }
-                                else
-                                {
-                                    $arrChecking[] = 0;
-                                }
-                                $time++;
-                            }
-
-                            if(!in_array(0, $arrChecking) || count($arrTempData) == 0)
-                            {
-                                $tf = false;
-                            }
-                        }
-
-                        $arrLen = count($arrTempData);
-                        $index = $arrLen - $numUnits;
-                        array_splice($arrTempData, $index);
-
-                        for ($a=0; $a < count($arrTempData); $a++) 
-                        { 
-                            $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][0] = ""; 
-                            $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][1] = ""; 
-                            $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][2] = ""; 
-                            $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][3] = ""; 
-                            $timeTable[$section][$arrTempData[$a][0]][$arrTempData[$a][1]][4] = ""; 
-                        }       
-
-                        $arrDays = array_reverse($arrDays);
-                        $arrDaysCount = count($arrDays);
-                        array_splice($arrDays, $arrDaysCount - 1);
-                        $arrDays = array_reverse($arrDays);     
-                    }               
-                }                
-            }
-        }
-
-        for ($numUnits=$maxUnit; $numUnits > 0; $numUnits--) 
-        { 
-            foreach ($arrData as $key => $value) 
-            {
-                $arrDays = $days;
-                $section = $key;
-                for ($x=0; $x < count($value); $x++) 
-                { 
-                    if($value[$x]['units'] == $numUnits)
-                    {
-                        for ($y=0; $y < $value[$x]['units']; $y++) 
-                        { 
-                            if($value[$x]['lab'] == 0)
-                            {
-                                $result = $this->setScheduleOne($arrDays, $times, $timeTable, $rooms, $section, $value[$x]);
-
-                                if($result != null)
-                                {
-                                    $timeTable[$section][$result[0]][$result[1]][0] = $value[$x]['subject'];
-                                    $timeTable[$section][$result[0]][$result[1]][1] = $result[2];
-                                    $timeTable[$section][$result[0]][$result[1]][2] = '0';
-                                    $timeTable[$section][$result[0]][$result[1]][3] = $value[$x]['prof'];
-                                    $timeTable[$section][$result[0]][$result[1]][4] = $value[$x]['subject_name'];
-                                }
-
-                                $arrDays = array_reverse($arrDays);
-                                $arrDaysCount = count($arrDays);
-                                array_splice($arrDays, $arrDaysCount - 1);
-                                $arrDays = array_reverse($arrDays);
-
-                                if(count($arrDays) == 0)
-                                {
-                                    $arrDays = $days;
-                                }
-                            }
-                        }       
-                    }   
+                            }       
+                        }   
+                    }
                 }
             }
+
+            $timetables = new Timetable();
+
+            $arrData = [
+                'name'                  => $request['txt_timeTableHeader'],
+                'days'                  => json_encode($days),
+                'schedules'             => json_encode($timeTable),
+                'user_id'               => Auth::user()->id,
+                'academic_period_id'    => $request['slc_academicPeriod'],
+                'created_at'            => date('Y-m-d H:i:s')
+            ];
+
+            $result = $timetables->addSchedule($arrData);
+
+            $msgResult = ($result > 0)? "Success" : "Database Error";
+
+
+
+            return response()->json($msgResult);  
         }
+        
 
-        $timetables = new Timetable();
-
-        $arrData = [
-            'name'                  => $request['txt_timeTableHeader'],
-            'days'                  => json_encode($days),
-            'schedules'             => json_encode($timeTable),
-            'user_id'               => Auth::user()->id,
-            'academic_period_id'    => $request['slc_academicPeriod'],
-            'created_at'            => date('Y-m-d H:i:s')
-        ];
-
-        $result = $timetables->addSchedule($arrData);
-
-
-
-        return response()->json($result);      
+            
 
         
     }

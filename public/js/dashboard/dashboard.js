@@ -18,9 +18,8 @@ const DASHBOARD = (function(){
 
 	    formData.set("arrDays", JSON.stringify(arrDays));
 
-	    $('#resource-modal').modal('hide');
-	    $('#div_progressBarContainer').prop('hidden',false);
-	    $('#resource-add-button').prop('hidden',true);
+	    $('#generate_btn').prop('disabled',true);
+	    $('#generate_btn').html("<i>Processing...</i>");
 
 	    $.ajax({
 	      /* DashboardController->generateSchedule() */
@@ -35,29 +34,71 @@ const DASHBOARD = (function(){
 	      data : formData,
 	      success : function(result)
 	      {
-	        	setTimeout(function(){
-	        	 	$('#div_progressBar').css('width','25%');
-	        	}, 1000);
-	        	setTimeout(function(){
-	        	 	$('#div_progressBar').css('width','50%');
-	        	}, 2000);
+	  			$('#resource-modal').modal('hide');
+	  			$('#div_progressBarContainer').prop('hidden',false);
+	  			$('#resource-add-button').prop('hidden',true);
 
-	        	setTimeout(function(){
-	        	 	$('#div_progressBar').css('width','75%');
-	        	}, 3000);
+	  			$('#generate_btn').prop('disabled',false);
+	  			$('#generate_btn').html("Generate");
 
-	        	setTimeout(function(){
-	        	 	$('#div_progressBar').css('width','100%');
-	        	}, 4000);
+	  			setTimeout(function(){
+	  			 	$('#div_progressBar').css('width','25%');
+	  			}, 1000);
+	  			setTimeout(function(){
+	  			 	$('#div_progressBar').css('width','50%');
+	  			}, 2000);
 
-	        	setTimeout(function(){
-	        		$('#div_progressBarContainer').prop('hidden',true);
-	        		$('#resource-add-button').prop('hidden',false);
-	        		$('#div_progressBar').css('width','0%');
+	  			setTimeout(function(){
+	  			 	$('#div_progressBar').css('width','75%');
+	  			}, 3000);
 
-	        		DASHBOARD.loadSchedules();
-	        	}, 5000);
-	      }
+	  			setTimeout(function(){
+	  			 	$('#div_progressBar').css('width','100%');
+	  			}, 4000);
+
+	  			setTimeout(function(){
+	  				$('#div_progressBarContainer').prop('hidden',true);
+	  				$('#resource-add-button').prop('hidden',false);
+	  				$('#div_progressBar').css('width','0%');
+
+	  				DASHBOARD.loadSchedules();
+	  			}, 5000);
+	      },
+	      	error: function (response, text_status, xhr) {
+
+	      		$('#generate_btn').prop('disabled',false);
+	  			$('#generate_btn').html("Generate");
+
+	      	    if (response.status == 422) {
+	      	        // We make it possible to extract errors whether they were returned
+	      	        // by Laravel $this->validator or by Validator::make()
+	      	        // The former has errors array directly in JSON response body
+	      	        // while Validator::make() has it in an errors field
+	      	        var responseContent = response.responseJSON;
+	      	        var errors = responseContent.errors ? responseContent.errors : responseContent;
+
+	      	        var errorHtml = App.buildErrorHtml(errors);
+
+	      	        $('#errors-container').find('ul').html(errorHtml);
+	      	        $('.modal-error-div').removeClass('hidden')
+	      	            .delay(15000).queue(function () {
+	      	                $(this).addClass('hidden').dequeue();
+	      	            });
+	      	        $('#errors-container').show();
+	      	    }
+
+	      	    var text = (response.status == 422) ?
+	      	        'The form submission failed! Check form for details.' :
+	      	        'Oops! A system error occurred';
+
+	      	    new PNotify({
+	      	        title: 'Error',
+	      	        text: text,
+	      	        styling: 'bootstrap3',
+	      	        type: 'error',
+	      	        delay: 9500
+	      	    });
+	      	}
 		});	
 		
 	}
@@ -97,6 +138,8 @@ const DASHBOARD = (function(){
 		$("#iframe_printSchedule").contents().find("body").html("<center><i>Loading, please wait...</i></center>").css('background-color','white');
 
 		$('#iframe_printSchedule').prop('src',`${baseUrl}public/print-schedule/${scheduleId}`);
+
+		$('#lnk_pdfPreview').prop('href',`${baseUrl}public/print-schedule/${scheduleId}`);
 
 		$('#modal_printPreviewSchedule').modal('show');
 	}

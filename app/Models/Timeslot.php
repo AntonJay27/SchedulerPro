@@ -59,4 +59,20 @@ class Timeslot extends Model
 
         return $timeslots;
     }
+
+    public function loadUnavailableSlot($profId)
+    {
+        $columns = [
+            'a.id',
+            'a.professor_id',
+            'a.timeslot_id',
+            'a.day_id'
+        ];
+        $timeslots = DB::table('unavailable_timeslots AS a')
+        ->select($columns)
+        ->where('a.professor_id','=',$profId)
+        ->get()->toArray();
+
+        return $timeslots;
+    }
 }

@@ -83,6 +83,11 @@
 
             <div class="modal-body">
                 <iframe src="" id="iframe_printSchedule" style="width:100%; height: 75vh;"></iframe>
+                <br>
+                <br>
+                <center>
+                    <a href="#" id="lnk_pdfPreview" target="_blank">View full page in new tab</a>
+                </center>
             </div>
         </div>
     </div>

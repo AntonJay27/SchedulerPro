@@ -32,11 +32,15 @@ class TimetableService extends AbstractService
     {
         $errors = [];
 
+        $baseUrl = config('app.url');
+
         $subjectsQuery = 'SELECT id FROM subjects WHERE id NOT IN (SELECT DISTINCT subject_id FROM subjects_professors)';
         $subjectIds = DB::select($subjectsQuery);
 
         if (count($subjectIds)) {
-            $errors[] = "Some subjects don't have professors.<a href=\"/subjects?filter=no_professor\" target=\"_blank\">Click here to review them</a>";
+            $errors[] = <<<EOD
+            Some subjects don't have professors.<a href="{$baseUrl}subjects?filter=no_professor" target="_blank">Click here to review them</a>
+            EOD;
         }
 
         if (!CollegeClass::count()) {
@@ -47,7 +51,9 @@ class TimetableService extends AbstractService
         $classIds = DB::select($classesQuery);
 
         if (count($classIds)) {
-            $errors[] = "Some classes don't have any subject set up.<a href=\"/classes?filter=no_subject\" target=\"_blank\">Click here to review them</a>";
+            $errors[] = <<<EOD
+            Some classes don't have any subject set up.<a href="{$baseUrl}classes?filter=no_subject" target="_blank">Click here to review them</a>
+            EOD;
         }
 
         return $errors;
