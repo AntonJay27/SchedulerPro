@@ -60,7 +60,7 @@ class Timeslot extends Model
         return $timeslots;
     }
 
-    public function loadUnavailableSlot($profId)
+    public function loadUnavailableSlot()
     {
         $columns = [
             'a.id',
@@ -70,7 +70,6 @@ class Timeslot extends Model
         ];
         $timeslots = DB::table('unavailable_timeslots AS a')
         ->select($columns)
-        ->where('a.professor_id','=',$profId)
         ->get()->toArray();
 
         return $timeslots;

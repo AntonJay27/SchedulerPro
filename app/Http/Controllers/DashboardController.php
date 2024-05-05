@@ -84,59 +84,7 @@ class DashboardController extends Controller
         return $maxUnit;
     }
 
-    function setScheduleOne($days, $times, $timeTable, $rooms, $section, $subject)
-    {
-        $arrRooms = [];
-        $arrProfs = [];
-        for ($x=0; $x < count($days); $x++) 
-        {
-            $day = $days[$x];
-
-            $randSchedIndex = array_rand($timeTable[$section][$day],1);
-            $time = $randSchedIndex;
-
-            foreach ($timeTable as $key => $value) 
-            {
-                if($key != $section)
-                {
-                    $arrRooms[] = $timeTable[$key][$day][$time][1];
-                    $arrProfs[] = $timeTable[$key][$day][$time][3];
-                }
-            }
-
-            // $strSlot = "$x-$time";
-            // $arrUnavailableSlot = $this->loadUnavailableSlot($subject['prof']);
-            // if(!in_array($strSlot, $arrUnavailableSlot))
-            // {
-                shuffle($rooms);
-                foreach ($rooms as $key => $value) 
-                {
-                    if(!in_array($value['room'], $arrRooms) && $timeTable[$section][$day][$time][1] == "")
-                    {
-                        if(!in_array($subject['prof'], $arrProfs) && $timeTable[$section][$day][$time][3] == "")
-                        {
-                            if($subject['lab'] == 1)
-                            {
-                                if($value['lab'] == 1)
-                                {
-                                    return [$day, $time, $value['room']];
-                                }
-                            }   
-                            else
-                            {
-                                if($value['lab'] == 0)
-                                {
-                                    return [$day, $time, $value['room']];
-                                }
-                            }
-                        }               
-                    }       
-                }
-            // }
-        }
-    }
-
-    function setScheduleTwo($days, $times, $timeTable, $rooms, $section, $subject)
+    function setScheduleOne($days, $times, $timeTable, $rooms, $section, $subject, $arrUnavailableTimeSlot)
     {
         $arrRooms = [];
         $arrProfs = [];
@@ -159,7 +107,7 @@ class DashboardController extends Controller
                 }
 
                 $strSlot = "$x-$y";
-                $arrUnavailableSlot = $this->loadUnavailableSlot($subject['prof']);
+                $arrUnavailableSlot = $this->loadUnavailableSlot($subject['prof'], $arrUnavailableTimeSlot);
                 if(!in_array($strSlot, $arrUnavailableSlot))
                 {
                     foreach ($rooms as $key => $value) 
@@ -192,19 +140,110 @@ class DashboardController extends Controller
 
     }
 
-
-    function loadUnavailableSlot($profId)
+    function setScheduleTwo($days, $times, $timeTable, $rooms, $section, $subject, $arrUnavailableTimeSlot)
     {
-        $timeslots = new Timeslot();
-        $arrResult = $timeslots->loadUnavailableSlot($profId);
-        $arrData = [];
-        foreach ($arrResult as $key => $value) 
+        $arrRooms = [];
+        $arrProfs = [];
+        for ($x=0; $x < count($days); $x++) 
         {
-            $day = (int)$value->day_id - 1;
-            $time = (int)$value->timeslot_id - 1;
-            $arrData[] = "{$day}-{$time}";
+            for ($y=0; $y < count($days); $y++) 
+            { 
+                $day = $days[$x];
+
+                $randSchedIndex = array_rand($timeTable[$section][$day],1);
+                $time = $randSchedIndex;
+
+                $arrRooms = [];
+                $arrProfs = [];
+                foreach ($timeTable as $key => $value) 
+                {
+                    if($key != $section)
+                    {
+                        $arrRooms[] = $timeTable[$key][$day][$time][1];
+                        $arrProfs[] = $timeTable[$key][$day][$time][3];
+                    }
+                }
+
+                $strSlot = "$x-$time";
+                $arrUnavailableSlot = $this->loadUnavailableSlot($subject['prof'], $arrUnavailableTimeSlot);
+
+                if(!in_array($strSlot, $arrUnavailableSlot))
+                {
+                    shuffle($rooms);
+                    foreach ($rooms as $key => $value) 
+                    {
+                        if(!in_array($value['room'], $arrRooms) && $timeTable[$section][$day][$time][1] == "")
+                        {
+                            if(!in_array($subject['prof'], $arrProfs) && $timeTable[$section][$day][$time][3] == "")
+                            {
+                                if($subject['lab'] == 1)
+                                {
+                                    if($value['lab'] == 1)
+                                    {
+                                        return [$day, $time, $value['room']];
+                                    }
+                                }   
+                                else
+                                {
+                                    if($value['lab'] == 0)
+                                    {
+                                        return [$day, $time, $value['room']];
+                                    }
+                                }
+                            }               
+                        }       
+                    }
+                }
+            }
+        }
+    }
+
+    
+
+
+    function loadUnavailableSlot($profId, $arrUnavailableTimeSlot)
+    {
+        $arrData = [];
+        foreach ($arrUnavailableTimeSlot as $key => $value) 
+        {
+            if($profId == $value->professor_id)
+            {
+                $day = (int)$value->day_id - 1;
+                $time = (int)$value->timeslot_id - 1;
+                $arrData[] = "{$day}-{$time}";
+            }
         }
         return $arrData;
+    }
+
+    function loadRooms($arrData)
+    {
+        $arrLab = [];
+        foreach ($arrData as $key => $value) 
+        {
+            if($value['lab'] == 1)
+            {
+                $arrLab[] = 1;
+            }
+        }
+
+        $result = (count($arrLab) > 0)? 'yes' : 'no';
+        return $result;
+    }
+
+    function loadSubjects($arrData)
+    {
+        $arrLab = [];
+        foreach ($arrData as $key => $value) 
+        {
+            if($value['lab'] == 1)
+            {
+                $arrLab[] = 1;
+            }
+        }
+
+        $result = (count($arrLab) > 0)? 'yes' : 'no';
+        return $result;
     }
 
     public function generateSchedule(Request $request)
@@ -238,6 +277,7 @@ class DashboardController extends Controller
         {
 
             $timeslots = new Timeslot();
+
             $arrTimeSlots = $timeslots->loadTimeslots();
             $arrTimeSlotsCount = count($arrTimeSlots);
             $times = [];
@@ -252,11 +292,27 @@ class DashboardController extends Controller
             $rooms = json_decode(json_encode($arrRooms),true);
 
             $academicPeriod = 1;
-            $subjects = new Subject();
-            $arrSubjects = $subjects->loadSubjects($academicPeriod); 
+            $subjectss = new Subject();
+            $arrSubjects = $subjectss->loadSubjects($academicPeriod); 
+
+            $subjects = json_decode(json_encode($arrSubjects),true);
+
+            $arrRoomsData = $this->loadRooms($rooms);
+            $arrSubjectsData = $this->loadSubjects($subjects);
+
+            if($arrSubjectsData == 'yes' && $arrRoomsData == 'no')
+            {
+                $baseUrl = config('app.url');
+                
+                $result[] = <<<EOD
+                It seems like you have laboratory subjects but you don't have laboratory rooms. <a href="{$baseUrl}rooms" target="_blank">Click here to review rooms</a>
+                EOD;
+                return response()->json($result, 422);
+                exit();
+            }
 
             $arrClasses = [];
-            foreach (json_decode(json_encode($arrSubjects),true) as $key => $value) 
+            foreach ($subjects as $key => $value) 
             {
                 $value['name'] = str_replace(' ', '_', $value['name']);
                 if(!in_array($value['name'], $arrClasses))
@@ -284,6 +340,7 @@ class DashboardController extends Controller
                 }
             }
 
+            $arrUnavailableTimeSlot = $timeslots->loadUnavailableSlot();
 
             $timeTable = $this->createEmptyFields($days, $times, $arrData);
 
@@ -316,7 +373,7 @@ class DashboardController extends Controller
                                 { 
                                     if($value[$x]['lab'] == 1)
                                     {
-                                        $result = $this->setScheduleTwo($arrDays, $times, $timeTable, $rooms, $section, $value[$x]);
+                                        $result = $this->setScheduleOne($arrDays, $times, $timeTable, $rooms, $section, $value[$x], $arrUnavailableTimeSlot);
 
                                         if($result != null)
                                         {
@@ -394,7 +451,7 @@ class DashboardController extends Controller
                             { 
                                 if($value[$x]['lab'] == 0)
                                 {
-                                    $result = $this->setScheduleOne($arrDays, $times, $timeTable, $rooms, $section, $value[$x]);
+                                    $result = $this->setScheduleTwo($arrDays, $times, $timeTable, $rooms, $section, $value[$x], $arrUnavailableTimeSlot);
 
                                     if($result != null)
                                     {
